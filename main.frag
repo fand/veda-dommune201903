@@ -1,0 +1,91 @@
+/*{
+  glslify: true,
+  frameskip: 1,
+  pixelRatio: 1,
+}*/
+precision highp float;
+uniform float time;
+uniform vec2 resolution;
+
+#pragma glslify: blur = require('glsl-fast-gaussian-blur')
+#pragma glslify: noise2 = require('glsl-noise/simplex/2d')
+#pragma glslify: noise3 = require('glsl-noise/simplex/3d')
+
+#define PI 3.141593
+
+struct Camera {
+  vec3 pos;
+  vec3 dir;
+};
+
+vec2 rot(in vec2 uv, in float t) {
+  float c = cos(t), s = sin(t);
+  return mat2(c, -s, s, c) * uv;
+}
+
+float stripes(in vec2 uv, in float beat) {
+  beat = exp(beat * -10.);
+
+  float fy = floor(uv.y * 32.);
+  float freq = noise2(vec2(fy, time * 0.01)) * 15. + 2.;
+  float timeFactor = noise2(vec2(fy)) * 10.1;
+
+  float x = uv.x;
+  return sin(x * freq + timeFactor * beat * PI);
+}
+
+float rings(in vec2 uv, in float beat) {
+  uv = uv * 2. - 1.;
+  beat = exp(beat * -4.);
+
+  float c = 0.0;
+  float d = 0.0; // depth
+
+  for (int i = 0; i < 16; i++) {
+    float fi = float(i);
+    float ni = sin(fi * 3.7) * cos(fi * 13.9);
+    float nt = sin(fi + beat * 2.8 + time * .7) * 0.5 * 1.;
+
+    vec2 uv2 = vec2(uv.x, uv.y + float(i) / 8. - 1.0);
+    uv2.y *= 2.;
+    uv2.x += ni * 0.2;
+
+    float l = length(uv2 - vec2(0.0));
+    l *= nt * 4. + 5.;
+
+    float a = atan(uv2.y, uv2.x);
+    a += (ni * 3.) * time * 2.;
+
+    c += smoothstep(.9, .91, l) * smoothstep(1.0, .99, l) * sin(a);
+  }
+
+  return c;
+}
+
+// float stars(in Camera cam, in float beat) {
+//   vec3 c1 = vec3(0.5, 0.8, 0.0);
+//   vec3 c2 = vec3(-0.8, 0.2, 0.0);
+//   vec3 c3 = vec3(0.4, -0.2, 0.0);
+//
+//
+// }
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / resolution;
+  vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+  float c = 0.0;
+
+  float loopLength = 1.;
+  float beat = fract(time / loopLength);
+
+  // Camera cam;
+  // cam.pos = vec3((uv * 2. - 1.), 10);
+  // cam.dir = vec3(0, 0, -1);
+
+  // c += stripes(rot(uv, .5), beat);
+  // c += stars(cam, beat);
+  c += rings(uv, beat);
+
+  c *= .3;
+  gl_FragColor = vec4(c, c, c, 1);
+}
