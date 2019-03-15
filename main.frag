@@ -62,30 +62,61 @@ float rings(in vec2 uv, in float beat) {
   return c;
 }
 
-// float stars(in Camera cam, in float beat) {
-//   vec3 c1 = vec3(0.5, 0.8, 0.0);
-//   vec3 c2 = vec3(-0.8, 0.2, 0.0);
-//   vec3 c3 = vec3(0.4, -0.2, 0.0);
-//
-//
-// }
+float star(in vec2 uv, in vec2 star) {
+  vec2 u1 = uv - star;
+  float l = length(u1);
+  float a = atan(u1.y, u1.x);
+  return sin(a * 32.) / (l * 2.) * max(2. - l, 0.0);
+}
+
+float stars(in vec2 uv, in float beat) {
+  uv = uv * 2. - 1.;
+  uv.x *= resolution.x / resolution.y;
+
+  float c = 0.0;
+
+  vec2 c1 = vec2(0.5, 0.4);
+  vec2 c2 = vec2(-0.7, 0.1);
+  vec2 c3 = vec2(0.3, -0.3);
+
+  beat = exp(beat * - 4.0);
+  uv *= (1. + sin(beat * 3. * PI) * 0.1);
+
+  c1 = rot(c1 * (1. + sin(time + 1.) * 0.2), time);
+  c2 = rot(c2 * (1. + sin(time + 2.) * 0.3), -time *0.7);
+  c3 = rot(c3 * (1. + sin(time + 3.) * 0.2), time * 0.6);
+
+  c += star(uv, c1);
+  c += star(uv, c2);
+  c += star(uv, c3);
+
+  return c;
+}
+
+float draw(in vec2 uv) {
+  float loopLength = 1.;
+  float beat = fract(time / loopLength);
+
+  float c = 0.0;
+
+  // c += stripes(rot(uv, .5), beat);
+  c += stars(uv, beat);
+  // c += rings(uv, beat);
+
+  return c * .2;
+}
 
 void main() {
   vec2 uv = gl_FragCoord.xy / resolution;
   vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
   float c = 0.0;
 
-  float loopLength = 1.;
-  float beat = fract(time / loopLength);
+  // float c = draw(uv);
 
-  // Camera cam;
-  // cam.pos = vec3((uv * 2. - 1.), 10);
-  // cam.dir = vec3(0, 0, -1);
-
-  // c += stripes(rot(uv, .5), beat);
-  // c += stars(cam, beat);
-  c += rings(uv, beat);
-
-  c *= .3;
-  gl_FragColor = vec4(c, c, c, 1);
+  gl_FragColor = vec4(
+    draw((uv - .5) * 1.00 + 0.5),
+    draw((uv - .5) * 1.03 + 0.5),
+    draw((uv - .5) * 1.05 + 0.5),
+    1
+  );
 }
