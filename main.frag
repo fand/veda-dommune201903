@@ -187,6 +187,63 @@ float balls(in vec2 uv, in float beat) {
   return c;
 }
 
+float arcBall(in vec2 uv, in float beat, in float seed) {
+  uv = uv * 2. - 1.;
+  uv.x *= resolution.x / resolution.y;
+
+  uv *= 6.;
+
+  beat = 1. - exp(beat * -8.0);
+
+  float c = 0.0;
+
+  c += .3 / length(uv * (1. + sin(time) * 0.2));
+
+  for (int i = 0; i < 5; i++) {
+    float fi = float(i);
+    float r = 1.8 + sin(fi * 3.) * 2.8;
+
+    float ti = time + r * 8. + seed;
+
+    // skew
+    vec2 uv2 = uv;
+    // vec2 uv2 = rot(uv, r * 8. + time);
+    // uv2.x *= 1. + cos(ti) * 0.7;
+    // uv2.y *= 1. + sin(ti) * 0.2;
+
+    float a1 = mod(fi * 9. + ti * 1.1 * sin(seed + fi), 2. * PI);
+    float a2 = mod(fi * 9. + ti * 1.7 * sin(seed + fi), 2. * PI);
+
+    float a = atan(uv2.y, uv2.x) +PI;
+
+    // ring
+    float l = length(uv2);
+    float ring = smoothstep(r, r + .01, l) * smoothstep(r + .3, r + .29, l);
+
+    // arc
+    float arc = smoothstep(a1, a1 + 0.01, a) * smoothstep(a2, a2 - 0.01, a);
+
+    if (a1 > a2) {
+      arc = (
+        step(0., a) * smoothstep(a2, a2 - 0.01, a) +
+        smoothstep(a1, a1 + 0.01, a) * step(a, 7.)
+      );
+    }
+
+    c += arc * ring;
+  }
+
+  return c;
+}
+
+float arcBalls(in vec2 uv, in float beat) {
+    return (
+      arcBall(uv + vec2(cos(time * 0.03), sin(time * 0.04)) * 0.3, beat, 10.) +
+      arcBall(uv + vec2(cos(time * 0.02), sin(time * 0.07)) * 0.5, beat, 20.) +
+      arcBall(uv + vec2(cos(time * 0.09), sin(time * 0.03)) * 0.4, beat, 30.)
+    );
+}
+
 float draw(in vec2 uv) {
   float loopLength = 1.;
   float beat = fract(time / loopLength); // 15sec
@@ -197,7 +254,9 @@ float draw(in vec2 uv) {
   // c += stars(uv, beat);
   // c += rings(uv, beat);
   // c += dia(uv, beat);
-  c += balls(uv, beat);
+  // c += balls(uv, beat);
+
+  c += arcBalls(uv, beat) * 1.0;
 
   return c;
 }
