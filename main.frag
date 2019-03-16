@@ -1,6 +1,6 @@
 /*{
   glslify: true,
-  frameskip: 1,
+  frameskip: 2,
   pixelRatio: 1,
 }*/
 precision highp float;
@@ -65,45 +65,102 @@ float rings(in vec2 uv, in float beat) {
 float star(in vec2 uv, in vec2 star) {
   vec2 u1 = uv - star;
   float l = length(u1);
-  float a = atan(u1.y, u1.x);
-  return sin(a * 32.) / (l * 2.) * max(2. - l, 0.0);
+  float a = atan(u1.y, u1.x) + time *PI / 5.; // 6sec
+  return sin(a * 16.) / (l * 2.) * max(2. - l, 0.0);
 }
 
 float stars(in vec2 uv, in float beat) {
   uv = uv * 2. - 1.;
   uv.x *= resolution.x / resolution.y;
 
+  uv *= 1.2;
+
   float c = 0.0;
 
   vec2 c1 = vec2(0.5, 0.4);
-  vec2 c2 = vec2(-0.7, 0.1);
+  vec2 c2 = vec2(-0.6, 0.1);
   vec2 c3 = vec2(0.3, -0.3);
 
   beat = exp(beat * - 4.0);
-  uv *= (1. + sin(beat * 3. * PI) * 0.1);
+  // uv /= 1. + sin(beat) * 2.;
 
-  c1 = rot(c1 * (1. + sin(time + 1.) * 0.2), time);
-  c2 = rot(c2 * (1. + sin(time + 2.) * 0.3), -time *0.7);
-  c3 = rot(c3 * (1. + sin(time + 3.) * 0.2), time * 0.6);
+  // c1 *= 2.;
+  // c2 *= 2.;
+  // c3 *= 2.;
 
-  c += star(uv, c1);
-  c += star(uv, c2);
-  c += star(uv, c3);
+  float bt = time * PI / 7.5; // 15sec
+
+  // for (int i = 0; i < 8; i++) {
+  //   c1 = rot(c1, bt);
+  //   c += star(uv, c1 * (1. - 0.2* float(i) / 8.));
+  // }
+
+  // c1 = rot(c1, bt);
+  // c2 = rot(c1, bt);
+  // c3 = rot(c2, bt);
+  // // c1 = rot(c1 * (1. + sin(time + 1.) * 0.2), time);
+  // // c2 = rot(c2 * (1. + sin(time + 2.) * 0.1), time);
+  // // c3 = rot(c3 * (1. + sin(time + 3.) * 0.2), time);
+  //
+  // c += star(uv, c1);
+  // c += star(uv, c2);
+  // c += star(uv, c3);
+
+  return smoothstep(.2, .8, c);
+}
+
+float line(float x, float y) {
+  float d = abs(y - x);
+  return smoothstep(.03, .0, d);
+}
+
+float dia(in vec2 uv, in float beat) {
+  uv = uv * 2. - 1.;
+  uv.x *= resolution.x / resolution.y;
+
+  float c = 0.0;
+
+  uv *= 4.0 * PI;
+  uv.y *= 1. + cos(uv.x) * 0.1;
+
+  beat = exp(beat* -5.0);
+
+  uv.x *= 1. - beat;
+
+  // uv.y += cos(uv.x * time * 0.3) * 0.2;
+
+  uv.y += PI;
+  c += cos(uv.x) + cos(uv.y);
+
+  uv.y -= PI * 2.;
+  c *= cos(uv.x) + cos(uv.y);
+
+  uv.y += PI;
+  uv = abs(uv);
+  uv *= 1.5 + cos((time - beat) * PI / 3.);
+  c *= .5 + cos(uv.x) + cos(uv.y);
+
+  // c /= length(uv) * 0.2;
+
+  // float fx = sin(uv.x * 4. * PI);
+  // uv.y = abs(uv.y);
+  // float c = step(sin(uv.x * PI - beat), uv.y) - step(cos(uv.x * PI + beat), uv.y);
 
   return c;
 }
 
 float draw(in vec2 uv) {
   float loopLength = 1.;
-  float beat = fract(time / loopLength);
+  float beat = fract(time / loopLength); // 15sec
 
   float c = 0.0;
 
   // c += stripes(rot(uv, .5), beat);
-  c += stars(uv, beat);
+  // c += stars(uv, beat);
   // c += rings(uv, beat);
+  c += dia(uv, beat);
 
-  return c * .2;
+  return c;
 }
 
 void main() {
@@ -117,6 +174,6 @@ void main() {
     draw((uv - .5) * 1.00 + 0.5),
     draw((uv - .5) * 1.03 + 0.5),
     draw((uv - .5) * 1.05 + 0.5),
-    1
+    1.0
   );
 }
