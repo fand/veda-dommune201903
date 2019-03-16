@@ -149,6 +149,44 @@ float dia(in vec2 uv, in float beat) {
   return c;
 }
 
+float hexWave(in vec2 p) {
+  float c = 0.0;
+
+  p = abs(p);
+
+  float a = atan(p.y, p.x);
+  if (abs(a) > PI / 6.0) {
+    p = rot(p, PI / 3.0);
+  }
+  p.x *= p.x;
+  c += sin(p.x *2. * PI);
+  c *= 0.3 / p.x;
+
+  return c;
+}
+
+float balls(in vec2 uv, in float beat) {
+  uv = uv * 2. - 1.;
+  uv.x *= resolution.x / resolution.y;
+
+
+  float c;
+
+  beat = 1. - exp(beat * -8.0);
+
+  float d = beat * 2.;
+  uv *= 1.4;
+  c += hexWave(uv - vec2(.3, 0.4) * d);
+  c /= hexWave(uv - vec2(-.6, 0.2) * d);
+  c /= hexWave(uv - vec2(.5, -.1) * d);
+  c /= hexWave(uv - vec2(-.4, -.3) * d);
+  c /= hexWave(uv - vec2(-.2, .5) * d);
+  c /= hexWave(uv - vec2(.2, -.5) * d);
+
+  // c = clamp(0.,1., c) / length(uv);
+  return c;
+}
+
 float draw(in vec2 uv) {
   float loopLength = 1.;
   float beat = fract(time / loopLength); // 15sec
@@ -158,7 +196,8 @@ float draw(in vec2 uv) {
   // c += stripes(rot(uv, .5), beat);
   // c += stars(uv, beat);
   // c += rings(uv, beat);
-  c += dia(uv, beat);
+  // c += dia(uv, beat);
+  c += balls(uv, beat);
 
   return c;
 }
