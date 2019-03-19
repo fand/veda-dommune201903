@@ -353,23 +353,23 @@ vec4 draw(in vec2 uv) {
 vec2 pre(in vec2 uv) {
   vec2 p = (gl_FragCoord.xy * 2. - resolution) / min(resolution.x, resolution.y);
 
+  float o0 = osc(0.);
+  float o1 = osc(1.);
+  float o2 = osc(2.);
+  float o3 = osc(3.);
   float o4 = osc(4.);
   float o5 = osc(5.);
   float o6 = osc(6.);
   float o7 = osc(7.);
-  float o8 = osc(8.);
-  float o9 = osc(9.);
-  float o10 = osc(10.);
-  float o13 = osc(13.);
 
-  uv = iWiggle(uv, o8);
-  uv = iSplit(uv, o9);
-  uv = iRot(uv, o10);
-  uv = iXShift(uv, o4);
-  uv = iKaleido(uv, o7);
+  uv = iWiggle(uv, o0);
+  uv = iSplit(uv, o1);
+  uv = iRot(uv, o2);
+  uv = iXShift(uv, o3);
+  uv = iKaleido(uv, o4);
   uv = iZoom(uv, o5);
   uv = iDia(uv, o6);
-  uv = iBor(uv, o13);
+  uv = iBor(uv, o7);
 
   return uv;
 }
@@ -380,28 +380,34 @@ vec4 post(in vec4 c) {
 
   // c = vec4(step(0.05, fwidth(c.r))); // edge
 
-  float o0 = osc(0.);
-  float o1 = osc(1.);
-  float o2 = osc(2.);
-  float o3 = osc(3.);
-  float o11 = osc(11.);
-  float o12 = osc(12.);
   float o16 = osc(16.);
+  float o17 = osc(17.);
+  float o18 = osc(18.);
+  float o19 = osc(19.);
+  float o20 = osc(20.);
+  float o21 = osc(21.);
+  float o22 = osc(22.);
+  float o23 = osc(23.);
   float o24 = osc(24.);
   float o25 = osc(25.);
   float o26 = osc(26.);
+  float o27 = osc(27.);
+  float o28 = osc(28.);
+
+  c = oChroma(c, uv, p, o27);
+  c = oBloom(c, uv, p, o28);
+
+  c = oRgb(c, uv, p, o16);
+  c = oMosh(c, uv, p, o17);
+  c = oInvert(c, uv, p, o18);
+  c = oHue(c, uv, p, o19);
+  c = oRainbow(c, uv, p, o20);
+  c = oRgl(c, uv, p, o21);
+  c = oPixSort(c, uv, p, o22);
 
   c = oRgbSwap1(c, uv, p, o24);
-  c = oRgbSwap1(c, uv, p, o25);
-  c = oRgbSwap1(c, uv, p, o26);
-
-  c = oRgb(c, uv, p, o2);
-  c = oMosh(c, uv, p, o3);
-  c = oInvert(c, uv, p, o0);
-  c = oHue(c, uv, p, o1);
-  c = oRainbow(c, uv, p, o11);
-  c = oRgl(c, uv, p, o12);
-  c = oPixSort(c, uv, p, o16);
+  c = oRgbSwap2(c, uv, p, o25);
+  c = oRgbSwap3(c, uv, p, o26);
 
   return c;
 }
@@ -419,7 +425,7 @@ void main() {
   }
   else if (PASSINDEX == 2) {
     vec4 c = texture2D(renderBuffer, uv);
-    // gl_FragColor = post(c);
-    gl_FragColor = c;
+    gl_FragColor = post(c);
+    // gl_FragColor = c;
   }
 }

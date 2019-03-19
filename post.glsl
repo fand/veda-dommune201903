@@ -142,3 +142,46 @@ vec4 oRgbSwap1(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
   }
   return c;
 }
+vec4 oRgbSwap2(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.)  {
+    c = texture2D(v2, asin(c.rg) * 0.3 + 0.5);
+  }
+  return c;
+}
+vec4 oRgbSwap3(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.)  {
+    c = texture2D(v3, asin(c.rg) * 0.3 + 0.5);
+  }
+  return c;
+}
+
+vec4 oChroma(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.)  {
+    uv -= .5;
+
+    c.r = texture2D(renderBuffer, uv * 0.97 + .5).r;
+    c.g = texture2D(renderBuffer, uv * 0.985 + .5).g;
+    c.b = texture2D(renderBuffer, uv * 1.00 + .5).b;
+  }
+  return c;
+}
+
+vec4 oBloom(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.)  {
+    if (length(c.rgb) > .5) {
+      float d = 0.1;
+      c += (
+        texture2D(renderBuffer, uv) * 4. +
+        texture2D(renderBuffer, uv + vec2(d, 0)) * 2. +
+        texture2D(renderBuffer, uv + vec2(-d, 0)) * 2. +
+        texture2D(renderBuffer, uv + vec2(0, d)) * 2. +
+        texture2D(renderBuffer, uv + vec2(0, -d)) * 2. +
+        texture2D(renderBuffer, uv + vec2(d, d)) +
+        texture2D(renderBuffer, uv + vec2(d, -d)) +
+        texture2D(renderBuffer, uv + vec2(-d, d)) +
+        texture2D(renderBuffer, uv + vec2(-d, -d))
+      ) / 16.;
+    }
+  }
+  return c;
+}
