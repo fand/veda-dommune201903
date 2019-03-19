@@ -24,6 +24,7 @@ uniform sampler2D backbuffer;
 uniform int PASSINDEX;
 uniform sampler2D renderBuffer;
 uniform sampler2D osc_note;
+uniform sampler2D osc_beat;
 uniform sampler2D v1;
 uniform sampler2D v2;
 uniform sampler2D v3;
@@ -48,6 +49,14 @@ float osc(in float ch) {
 vec2 rot(in vec2 uv, in float t) {
   float c = cos(t), s = sin(t);
   return mat2(c, -s, s, c) * uv;
+}
+
+float beat;
+float loopLength;
+
+void initGlobals() {
+  beat = texture2D(osc_beat, vec2(0)).r;
+  loopLength = texture2D(osc_beat, vec2(1)).r;
 }
 
 vec2 hexCenter(in vec2 p) {
@@ -350,7 +359,7 @@ float draw(in vec2 uv) {
   // c += stripes(rot(uv, .5), beat);
   // c += stars(uv, beat);
   // c += rings(uv, beat);
-  c += dia(uv, beat);
+  // c += dia(uv, beat);
   // c += balls(uv, beat);
   // c += arcBalls(uv, beat) * 1.0;
 
@@ -554,6 +563,8 @@ void main() {
   vec2 uv = gl_FragCoord.xy / resolution;
   vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
   float c = 0.0;
+
+  initGlobals();
 
   if (PASSINDEX == 1)  {
     uv = pre(uv);
