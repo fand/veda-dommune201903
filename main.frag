@@ -1,9 +1,14 @@
 /*{
   glslify: true,
   frameskip: 1,
-  pixelRatio: 2,
+  pixelRatio: 1,
   audio: true,
   osc: 3333,
+
+  vertexCount: 1000,
+  vertexMode: "LINES",
+  // vertexMode: "POINTS",
+
   "IMPORTED": {
     v1: { PATH: "./vj/beeple/beeple00020.mp4" },
     v2: { PATH: "./vj/tatsuya/tatsuya00034.mov" },
@@ -12,7 +17,8 @@
     v3: { PATH: './vj/beeple/beeple00010.mp4' },
   },
   PASSES: [
-    { fs: "mem.frag", TARGET: "mem", FLOAT: true },
+    // { fs: "mem.frag", TARGET: "mem", FLOAT: true },
+    { vs: "vert.vert", TARGET: "vertBuffer" },
     { TARGET: "renderBuffer" },
     {},
   ],
@@ -23,6 +29,7 @@ uniform vec2 resolution;
 uniform sampler2D backbuffer;
 uniform int PASSINDEX;
 uniform sampler2D renderBuffer;
+uniform sampler2D vertBuffer;
 uniform sampler2D osc_note;
 uniform sampler2D osc_beat;
 uniform sampler2D v1;
@@ -350,11 +357,11 @@ float metaballs(in vec2 uv, in float beat) {
   );
 }
 
-float draw(in vec2 uv) {
+vec4 draw(in vec2 uv) {
   float loopLength = 1.;
   float beat = fract(time / loopLength); // 15sec
 
-  float c = 0.0;
+  vec4 c = vec4(0);
 
   // c += stripes(rot(uv, .5), beat);
   // c += stars(uv, beat);
@@ -364,6 +371,8 @@ float draw(in vec2 uv) {
   // c += arcBalls(uv, beat) * 1.0;
 
   c += metaballs(uv, beat);
+
+  c += texture2D(vertBuffer, uv);
 
   // return smoothstep(.2, 4, c);
   return c;
