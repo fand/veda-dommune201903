@@ -1,8 +1,16 @@
 /*{
   glslify: true,
   frameskip: 1,
-  pixelRatio: 1,
+  pixelRatio: 2,
+  audio: true,
   osc: 3333,
+  "IMPORTED": {
+    v1: { PATH: "./vj/beeple/beeple00020.mp4" },
+    v2: { PATH: "./vj/tatsuya/tatsuya00034.mov" },
+    // v1: { PATH: './vj/beeple/beeple00034.mp4' },
+    // v2: { PATH: './vj/beeple/beeple00100.mp4' },
+    v3: { PATH: './vj/beeple/beeple00010.mp4' },
+  },
   PASSES: [
     { fs: "mem.frag", TARGET: "mem", FLOAT: true },
     { TARGET: "renderBuffer" },
@@ -16,6 +24,9 @@ uniform sampler2D backbuffer;
 uniform int PASSINDEX;
 uniform sampler2D renderBuffer;
 uniform sampler2D osc_note;
+uniform sampler2D v1;
+uniform sampler2D v2;
+uniform sampler2D v3;
 
 #pragma glslify: blur = require('glsl-fast-gaussian-blur')
 #pragma glslify: noise2 = require('glsl-noise/simplex/2d')
@@ -151,8 +162,8 @@ float stars(in vec2 uv, in float beat) {
   // c += star(uv, c1);
   // c += star(uv, c2);
   // c += star(uv, c3);
-
-  return smoothstep(.2, .8, c);
+  return c;
+  // return smoothstep(.2, .8, c);
 }
 
 float line(float x, float y) {
@@ -343,7 +354,7 @@ float draw(in vec2 uv) {
   // c += balls(uv, beat);
   // c += arcBalls(uv, beat) * 1.0;
 
-  // c += metaballs(uv, beat);
+  c += metaballs(uv, beat);
 
   // return smoothstep(.2, 4, c);
   return c;
@@ -369,8 +380,8 @@ vec2 pre(in vec2 uv) {
   // wiggle
   float owiggle = osc(8.);
   if (owiggle > 0.) {
-    uv.x += noise2(vec2(time * 5.)) * .03 * owiggle;
-    uv.y += noise2(vec2(time * 3. + 1.)) * .03 * owiggle;
+    uv.x += noise2(vec2(time * 10.)) * .01 * owiggle;
+    uv.y += noise2(vec2(time * 8. + 1.)) * .01 * owiggle;
   }
 
   float osplit = osc(9.);
@@ -386,7 +397,8 @@ vec2 pre(in vec2 uv) {
 
   float orot = osc(10.);
   if (orot > 0.) {
-    uv = rot(uv - .5, time * orot) + .5;
+    float l = length(uv - .5) * sin(time * 0.3) * 3.;
+    uv = rot(uv - .5, sin(time * 0.2 + l * l) * orot) + .5;
   }
 
   // x glitch
@@ -451,6 +463,19 @@ vec2 pre(in vec2 uv) {
 vec4 post(in vec4 c) {
   vec2 uv = gl_FragCoord.xy / resolution;
   vec2 p = (gl_FragCoord.xy * 2. - resolution) / min(resolution.x, resolution.y);
+
+  float oscrgbmap1 = osc(24.);
+  float oscrgbmap2 = osc(25.);
+  float oscrgbmap3 = osc(26.);
+  if (oscrgbmap1 > 0.) {
+    c = texture2D(v1, asin(c.rg) * 0.3 + 0.5);
+  }
+  if (oscrgbmap2 > 0.) {
+    c = texture2D(v2, asin(c.gb) * 0.3 + 0.5);
+  }
+  if (oscrgbmap3 > 0.) {
+    c = texture2D(v3, asin(c.rb) * 0.3 + 0.5);
+  }
 
   // glichy noise
   float oscrgb = osc(2.);
