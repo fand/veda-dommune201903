@@ -395,6 +395,7 @@ vec4 post(in vec4 c) {
   float o26 = osc(26.);
   float o27 = osc(27.);
   float o28 = osc(28.);
+  float o29 = osc(29.);
 
   c = oChroma(c, uv, p, o27);
   c = oBloom(c, uv, p, o28);
@@ -406,6 +407,7 @@ vec4 post(in vec4 c) {
   c = oRainbow(c, uv, p, o20);
   c = oRgl(c, uv, p, o21);
   c = oPixSort(c, uv, p, o22);
+  c = oBlink(c, uv, p, o29);
 
   c = oRgbSwap1(c, uv, p, o24);
   c = oRgbSwap2(c, uv, p, o25);

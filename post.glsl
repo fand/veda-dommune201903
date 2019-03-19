@@ -185,3 +185,13 @@ vec4 oBloom(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
   }
   return c;
 }
+
+vec4 oBlink(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > .0) {
+    c *= step(.5, fract(time * 15.)) * 2. - 1.;
+    // c = fract(c);
+    // c = 1. - c;
+  }
+
+  return c;
+}
