@@ -60,20 +60,20 @@ void initGlobals() {
   loopLength = texture2D(osc_beat, vec2(1)).r;
 }
 
-float stripes(in vec2 uv, in float beat) {
-  beat = exp(beat * -10.);
+float stripes(in vec2 uv) {
+  float b = exp(beat * -10.);
 
   float fy = floor(uv.y * 32.);
   float freq = noise2(vec2(fy, time * 0.01)) * 15. + 2.;
   float timeFactor = noise2(vec2(fy)) * 10.1;
 
   float x = uv.x;
-  return sin(x * freq + timeFactor * beat * PI);
+  return sin(x * freq + timeFactor * b * PI);
 }
 
-float rings(in vec2 uv, in float beat) {
+float rings(in vec2 uv) {
   uv = uv * 2. - 1.;
-  beat = exp(beat * -4.);
+  float b = exp(beat * -4.);
 
   float c = 0.0;
   float d = 0.0; // depth
@@ -81,7 +81,7 @@ float rings(in vec2 uv, in float beat) {
   for (int i = 0; i < 16; i++) {
     float fi = float(i);
     float ni = sin(fi * 3.7) * cos(fi * 13.9);
-    float nt = sin(fi + beat * 2.8 + time * .7) * 0.5 * 1.;
+    float nt = sin(fi + b * 2.8 + time * .7) * 0.5 * 1.;
 
     vec2 uv2 = vec2(uv.x, uv.y + float(i) / 8. - 1.0);
     uv2.y *= 2.;
@@ -106,7 +106,7 @@ float star(in vec2 uv, in vec2 star) {
   return sin(a * 16.) / (l * 2.) * max(2. - l, 0.0);
 }
 
-float stars(in vec2 uv, in float beat) {
+float stars(in vec2 uv) {
   uv = uv * 2. - 1.;
   uv.x *= resolution.x / resolution.y;
 
@@ -118,7 +118,8 @@ float stars(in vec2 uv, in float beat) {
   vec2 c2 = vec2(-0.6, 0.1);
   vec2 c3 = vec2(0.3, -0.3);
 
-  beat = exp(beat * - 4.0);
+
+  float b = exp(fract(beat * 3.) * - 4.0);
   // uv /= 1. + sin(beat) * 2.;
 
   // c1 *= 2.;
@@ -151,7 +152,7 @@ float line(float x, float y) {
   return smoothstep(.03, .0, d);
 }
 
-float dia(in vec2 uv, in float beat) {
+float dia(in vec2 uv) {
   uv = uv * 2. - 1.;
   uv.x *= resolution.x / resolution.y;
 
@@ -160,9 +161,9 @@ float dia(in vec2 uv, in float beat) {
   uv *= 4.0 * PI;
   uv.y *= 1. + cos(uv.x) * 0.1;
 
-  beat = exp(beat* -5.0);
+  // beat = exp(beat* -5.0);
 
-  uv.x *= 1. - beat;
+  uv.x *= 1. - fract(beat * 2.);
 
   // uv.y += cos(uv.x * time * 0.3) * 0.2;
 
@@ -202,16 +203,15 @@ float hexWave(in vec2 p) {
   return c;
 }
 
-float balls(in vec2 uv, in float beat) {
+float balls(in vec2 uv) {
   uv = uv * 2. - 1.;
   uv.x *= resolution.x / resolution.y;
 
-
   float c;
 
-  beat = 1. - exp(beat * -8.0);
+  float b = 1. - exp(beat * -8.0);
+  float d = b * 2.;
 
-  float d = beat * 2.;
   uv *= 1.4;
   c += hexWave(uv - vec2(.3, 0.4) * d);
   c /= hexWave(uv - vec2(-.6, 0.2) * d);
@@ -224,13 +224,11 @@ float balls(in vec2 uv, in float beat) {
   return c;
 }
 
-float arcBall(in vec2 uv, in float beat, in float seed) {
+float arcBall(in vec2 uv, in float b, in float seed) {
   uv = uv * 2. - 1.;
   uv.x *= resolution.x / resolution.y;
 
   uv *= 6.;
-
-  beat = 1. - exp(beat * -8.0);
 
   float c = 0.0;
 
@@ -274,17 +272,18 @@ float arcBall(in vec2 uv, in float beat, in float seed) {
   return c;
 }
 
-float arcBalls(in vec2 uv, in float beat) {
+float arcBalls(in vec2 uv) {
+    float b = 1. - exp(beat * -8.0);
     return (
-      arcBall(uv + vec2(cos(time * 0.3), sin(time * 0.4)) * 0.2, beat, 10.) +
-      arcBall(uv + vec2(cos(time * 0.2), sin(time * 0.7)) * 0.2, beat, 20.) +
-      arcBall(uv + vec2(cos(time * 0.9), sin(time * 0.3)) * 0.2, beat, 30.) +
-      arcBall(uv + vec2(cos(time * 0.4), sin(time * 0.15)) * 0.2, beat, 40.) +
-      arcBall(uv + vec2(cos(time * 0.5), sin(time * 0.8)) * 0.2, beat, 50.)
+      arcBall(uv + vec2(cos(time * 0.3), sin(time * 0.4)) * 0.2, b, 10.) +
+      arcBall(uv + vec2(cos(time * 0.2), sin(time * 0.7)) * 0.2, b, 20.) +
+      arcBall(uv + vec2(cos(time * 0.9), sin(time * 0.3)) * 0.2, b, 30.) +
+      arcBall(uv + vec2(cos(time * 0.4), sin(time * 0.15)) * 0.2, b, 40.) +
+      arcBall(uv + vec2(cos(time * 0.5), sin(time * 0.8)) * 0.2, b, 50.)
     ) / 2.;
 }
 
-float metaball(in vec2 uv, in float beat) {
+float metaball(in vec2 uv) {
   float c = 0.0;
 
   uv.x += uv.x * cos(uv.x * PI + time);
@@ -299,7 +298,7 @@ float metaball(in vec2 uv, in float beat) {
   return smoothstep(.5, .9, c) * 2.;
 }
 
-float metaballs(in vec2 uv, in float beat) {
+float metaballs(in vec2 uv) {
   uv = uv * 2. - 1.;
   uv.x *= resolution.x / resolution.y;
 
@@ -312,18 +311,17 @@ float metaballs(in vec2 uv, in float beat) {
   float d = .1 - exp(beat * -5.) * 0.2 * sign(mod(time, 2.) - 1.);
 
   return (
-    metaball(uv + .1, beat) +
-    metaball(rot(uv, p6) + d, beat) +
-    metaball(rot(uv, p6 * 2.) + d, beat) +
-    metaball(rot(uv, p6 * 3.) + d, beat) +
-    metaball(rot(uv, p6 * 4.) + d, beat) +
-    metaball(rot(uv, p6 * 5.) + d, beat)
+    metaball(uv + .1) +
+    metaball(rot(uv, p6) + d) +
+    metaball(rot(uv, p6 * 2.) + d) +
+    metaball(rot(uv, p6 * 3.) + d) +
+    metaball(rot(uv, p6 * 4.) + d) +
+    metaball(rot(uv, p6 * 5.) + d)
   );
 }
 
 vec4 draw(in vec2 uv) {
   float loopLength = 1.;
-  float beat = fract(time / loopLength); // 15sec
 
   vec4 c = vec4(0);
 
@@ -336,13 +334,13 @@ vec4 draw(in vec2 uv) {
   float o54 = osc(54.);
   float o56 = osc(56.);
 
-  if (o48 > .0) c += stripes(rot(uv, .5), beat);
-  if (o49 > .0) c += stars(uv, beat);
-  if (o50 > .0) c += rings(uv, beat);
-  if (o51 > .0) c += dia(uv, beat);
-  if (o52 > .0) c += balls(uv, beat);
-  if (o53 > .0) c += arcBalls(uv, beat) * 1.0;
-  if (o54 > .0) c += metaballs(uv, beat);
+  if (o48 > .0) c += stripes(rot(uv, .5));
+  if (o49 > .0) c += stars(uv);
+  if (o50 > .0) c += rings(uv);
+  if (o51 > .0) c += dia(uv);
+  if (o52 > .0) c += balls(uv);
+  if (o53 > .0) c += arcBalls(uv) * 1.0;
+  if (o54 > .0) c += metaballs(uv);
 
   if (o56 > .0) c += texture2D(vertBuffer, uv);
 
