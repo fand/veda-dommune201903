@@ -61,14 +61,18 @@ void initGlobals() {
 }
 
 float stripes(in vec2 uv) {
-  float b = exp(beat * -10.);
+  vec2 uv2 = rot(uv, .5);
+  float b = exp(fract(beat * 2.) * -4.);
 
-  float fy = floor(uv.y * 32.);
+  float fy = floor(uv2.y * 64.);
   float freq = noise2(vec2(fy, time * 0.01)) * 15. + 2.;
   float timeFactor = noise2(vec2(fy)) * 10.1;
 
-  float x = uv.x;
-  return sin(x * freq + timeFactor * b * PI);
+  float x = uv2.x;
+  float c = sin(x * freq + timeFactor * b * PI);
+
+  c *= min(1., length(uv - .5)) * .6;
+  return c;
 }
 
 float rings(in vec2 uv) {
@@ -334,7 +338,7 @@ vec4 draw(in vec2 uv) {
   float o54 = osc(54.);
   float o56 = osc(56.);
 
-  if (o48 > .0) c += stripes(rot(uv, .5));
+  if (o48 > .0) c += stripes(uv);
   if (o49 > .0) c += stars(uv);
   if (o50 > .0) c += rings(uv);
   if (o51 > .0) c += dia(uv);
