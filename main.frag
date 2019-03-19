@@ -7,6 +7,7 @@
 
   vertexCount: 1000,
   vertexMode: "LINES",
+  // vertexMode: "TRIANGLES",
   // vertexMode: "POINTS",
 
   "IMPORTED": {
@@ -36,27 +37,20 @@ uniform sampler2D v1;
 uniform sampler2D v2;
 uniform sampler2D v3;
 
+#define PI 3.141593
+#define SQRT3 1.7320508
+
 #pragma glslify: blur = require('glsl-fast-gaussian-blur')
 #pragma glslify: noise2 = require('glsl-noise/simplex/2d')
 #pragma glslify: noise3 = require('glsl-noise/simplex/3d')
+#pragma glslify: import('./util')
+#pragma glslify: import('./pre')
 #pragma glslify: import('./post')
-
-#define PI 3.141593
-#define SQRT3 1.7320508
 
 struct Camera {
   vec3 pos;
   vec3 dir;
 };
-
-float osc(in float ch) {
-  return texture2D(osc_note, vec2(ch / 64.)).r;
-}
-
-vec2 rot(in vec2 uv, in float t) {
-  float c = cos(t), s = sin(t);
-  return mat2(c, -s, s, c) * uv;
-}
 
 float beat;
 float loopLength;
@@ -64,36 +58,6 @@ float loopLength;
 void initGlobals() {
   beat = texture2D(osc_beat, vec2(0)).r;
   loopLength = texture2D(osc_beat, vec2(1)).r;
-}
-
-vec2 hexCenter(in vec2 p) {
-    mat2 skew = mat2(1. / 1.1457, 0, 0.5, 1);
-    mat2 inv = 2. * mat2(1., 0, -0.5, 1. / 1.1457);
-
-    vec2 cellP = skew * p;
-
-    // Decide which lane the cell is in
-    vec2 cellOrigin = floor(cellP); // -10 to 10, skewed
-    float celltype = mod(cellOrigin.x + cellOrigin.y, 3.0);
-    vec2 cellCenter = cellOrigin; // -10 to -10, skewed
-
-    if (celltype < 1.) {
-        // do nothing
-    }
-    else if (celltype < 2.) {
-        cellCenter = cellOrigin + 1.;
-    }
-    else if (celltype < 3.) {
-        cellP = fract(cellP);
-        if (cellP.x > cellP.y) {
-            cellCenter = cellOrigin + vec2(1, 0);
-        }
-        else {
-            cellCenter = cellOrigin + vec2(0, 1);
-        }
-    }
-
-    return inv * (cellCenter / SQRT3);
 }
 
 float stripes(in vec2 uv, in float beat) {
@@ -363,117 +327,49 @@ vec4 draw(in vec2 uv) {
 
   vec4 c = vec4(0);
 
-  // c += stripes(rot(uv, .5), beat);
-  // c += stars(uv, beat);
-  // c += rings(uv, beat);
-  // c += dia(uv, beat);
-  // c += balls(uv, beat);
-  // c += arcBalls(uv, beat) * 1.0;
+  float o48 = osc(48.);
+  float o49 = osc(49.);
+  float o50 = osc(50.);
+  float o51 = osc(51.);
+  float o52 = osc(52.);
+  float o53 = osc(53.);
+  float o54 = osc(54.);
+  float o56 = osc(56.);
 
-  c += metaballs(uv, beat);
+  if (o48 > .0) c += stripes(rot(uv, .5), beat);
+  if (o49 > .0) c += stars(uv, beat);
+  if (o50 > .0) c += rings(uv, beat);
+  if (o51 > .0) c += dia(uv, beat);
+  if (o52 > .0) c += balls(uv, beat);
+  if (o53 > .0) c += arcBalls(uv, beat) * 1.0;
+  if (o54 > .0) c += metaballs(uv, beat);
 
-  c += texture2D(vertBuffer, uv);
+  if (o56 > .0) c += texture2D(vertBuffer, uv);
 
   // return smoothstep(.2, 4, c);
   return c;
 }
 
-float blockNoise(in vec2 uv, float t) {
-  float n = 0.;
-  float k = .8;
-  float l = 3.7;
-  uv += .3;
-  for (int i = 0; i < 3; i++) {
-    l += 2.2;
-    n += noise3(vec3(floor(uv * l), t)) * k;
-    k *= .8;
-  }
-
-  return fract(n);
-}
-
 vec2 pre(in vec2 uv) {
   vec2 p = (gl_FragCoord.xy * 2. - resolution) / min(resolution.x, resolution.y);
 
-  // wiggle
-  float owiggle = osc(8.);
-  if (owiggle > 0.) {
-    uv.x += noise2(vec2(time * 10.)) * .01 * owiggle;
-    uv.y += noise2(vec2(time * 8. + 1.)) * .01 * owiggle;
-  }
+  float o4 = osc(4.);
+  float o5 = osc(5.);
+  float o6 = osc(6.);
+  float o7 = osc(7.);
+  float o8 = osc(8.);
+  float o9 = osc(9.);
+  float o10 = osc(10.);
+  float o13 = osc(13.);
 
-  float osplit = osc(9.);
-  if (osplit > 0.) {
-    float ntt = noise2(vec2(time));
-    if (ntt > .1) {
-        uv.x = fract(uv.x * 2.);
-    }
-    if (ntt > .2) {
-        uv.x = fract(uv.x * 1.2 +sin(time));
-    }
-  }
-
-  float orot = osc(10.);
-  if (orot > 0.) {
-    float l = length(uv - .5) * sin(time * 0.3) * 3.;
-    uv = rot(uv - .5, sin(time * 0.2 + l * l) * orot) + .5;
-  }
-
-  // x glitch
-  float oxg = osc(4.);
-  if (oxg > 0.) {
-    float ny = noise3(vec3(floor(uv.yy * 40.), time* 30.));
-    uv.x += step(1., ny * 4. * osc(4.)) * ny * .04 * oxg *oxg;
-  }
-
-  // kaleido
-  float okal = osc(7.) * 2.;
-  if (okal > 0.0) {
-    float l = length(uv);
-    uv -=.5;
-
-    uv = abs(uv);
-    uv = rot(uv, time * .2);
-
-    if (okal >= 0.5) {
-      uv = fract(uv * 1.2 +.2);
-      uv = abs(uv);
-      uv = rot(uv, -time * .4);
-    }
-
-    if (okal > 0.75) {
-      uv = fract(uv * 1.3 + .2);
-      uv = abs(uv);
-      uv = rot(uv, time);
-    }
-
-    uv += .5;
-  }
-
-  // Random zoom
-  float ozoom = osc(5.) * 2.;
-  float nt = noise2(vec2(time));
-  if (nt * ozoom > .1) {
-    float zoom = sin(time * 1.4) * sin(time * 2.37) * .5 + .5;
-    uv = uv + vec2(
-      sin(time * 2.8) + cos(time * 3.7),
-      sin(time * 1.3) + cos(time * 1.9)
-    ) * (1. - zoom) * .5;
-    uv = (uv - .5) * zoom + .5;
-  }
-
-  // dia
-  float odia = osc(6.) * 2.;
-  if (odia > 0.0) {
-    float ll = abs(uv.x - .5) + abs(uv.y - .5) - time * .3;
-    float ls = sin(floor(ll * 10.)) * .5 + .5;
-    uv = (uv - .5) * (1. - ls * .8 * odia) + .5;
-  }
-
-  float obor = osc(13.);
-  if (obor > .0) {
-    uv.x = uv.y;
-  }
+  uv = iWiggle(uv, o8);
+  uv = iSplit(uv, o9);
+  uv = iRot(uv, o10);
+  uv = iXShift(uv, o4);
+  uv = iKaleido(uv, o7);
+  uv = iZoom(uv, o5);
+  uv = iDia(uv, o6);
+  uv = iBor(uv, o13);
 
   return uv;
 }
@@ -482,88 +378,30 @@ vec4 post(in vec4 c) {
   vec2 uv = gl_FragCoord.xy / resolution;
   vec2 p = (gl_FragCoord.xy * 2. - resolution) / min(resolution.x, resolution.y);
 
-  float oscrgbmap1 = osc(24.);
-  float oscrgbmap2 = osc(25.);
-  float oscrgbmap3 = osc(26.);
-  if (oscrgbmap1 > 0.) {
-    c = texture2D(v1, asin(c.rg) * 0.3 + 0.5);
-  }
-  if (oscrgbmap2 > 0.) {
-    c = texture2D(v2, asin(c.gb) * 0.3 + 0.5);
-  }
-  if (oscrgbmap3 > 0.) {
-    c = texture2D(v3, asin(c.rb) * 0.3 + 0.5);
-  }
-
-  // glichy noise
-  float oscrgb = osc(2.);
-  if (oscrgb > 0.) {
-    c.r += step(.99, blockNoise(uv *1.7, fract(time * .1 * oscrgb)));
-    c.gb += step(.99, blockNoise(uv *2.4, fract(time * .1 * oscrgb)));
-  }
-
-  // mosh
-  float oscmosh = osc(3.);
-  if (oscmosh > 0.) {
-    float nx = blockNoise(uv * 2.7, fract(time * .1)) *.1;
-    float ny = blockNoise(uv * 1.8, fract(time * .2)) *.1;
-    c.rgb = mix(c.rgb, vec3(
-      c.r * oscmosh / texture2D(renderBuffer, fract(uv + vec2(nx, ny) + .01)).b,
-      c.g * oscmosh / texture2D(renderBuffer, fract(uv + vec2(nx, ny) + .03)).b,
-      c.b / texture2D(renderBuffer, fract(uv + vec2(nx, ny) + .01)).r
-    ), oscmosh * .2);
-  }
-
   // c = vec4(step(0.05, fwidth(c.r))); // edge
 
-  // invert
-  float oscinv = osc(0.);
-  if (oscinv == 1.) {
-    c.rgb = 1. - c.rgb;
-  } else {
-    c.rgb = mix(c.rgb, 1. - c.rgb, step(.4, noise3(vec3(uv.xx, time * 3. * oscinv) * oscinv * 3.)));
-  }
+  float o0 = osc(0.);
+  float o1 = osc(1.);
+  float o2 = osc(2.);
+  float o3 = osc(3.);
+  float o11 = osc(11.);
+  float o12 = osc(12.);
+  float o16 = osc(16.);
+  float o24 = osc(24.);
+  float o25 = osc(25.);
+  float o26 = osc(26.);
 
-  // hueshift
-  float oschue = osc(1.);
-  if (oschue > 0.0) {
-    c.rgb = hueRot(c.rgb, time * oschue - length(p) * .7 * oschue);
-  }
+  c = oRgbSwap1(c, uv, p, o24);
+  c = oRgbSwap1(c, uv, p, o25);
+  c = oRgbSwap1(c, uv, p, o26);
 
-  // rainbow
-  float oscrain = osc(11.);
-  if (oscrain > 0.) {
-    c.rgb = hueRot(c.rgb, time * oscrain + uv.y + uv.x);
-  }
-
-  float oscrgl = osc(12.);
-  if (oscrgl > 0.) {
-    c.r = texture2D(renderBuffer, fract(uv + vec2(sin(time * 30.) * sin(time * 183.) * sin(time * 73.) * .1, 0) + .01)).g;
-  }
-
-  // pixelsort
-  float oscpxs = osc(16.);
-  if (oscpxs > 0.) {
-    if (texture2D(renderBuffer, floor(uv * 320.) / 320.).g > .5) {
-      vec3 x = vec3(.0);///texture2D(renderBuffer, fract(uv)).rgb;
-      // vec2 du = rot(vec2(1, 0), noise2(floor(uv * 3.)) * 10.);
-      float nh = noise2(hexCenter(p * 1.5) + time *.04);
-      vec2 du = rot(vec2(1, 0), nh * 10.);
-
-      // float xi = mod(uv.x * resolution.x, 700.) / 700.;
-      float xi = uv.x;
-      for (int i = 0; i < 200; i++) {
-        float fi = float(i) * nh * 5.;
-        // vec3 r = texture2D(renderBuffer, uv + vec2(fi / resolution.x, 0)).rgb;
-        vec3 r = texture2D(renderBuffer, fract(uv + du * (fi / resolution.x))).rgb;
-        if (abs(length(r) - xi) < .03) {
-          x = r;
-          break;
-        }
-      }
-      c.rgb = x.grb *3.;
-    }
-  }
+  c = oRgb(c, uv, p, o2);
+  c = oMosh(c, uv, p, o3);
+  c = oInvert(c, uv, p, o0);
+  c = oHue(c, uv, p, o1);
+  c = oRainbow(c, uv, p, o11);
+  c = oRgl(c, uv, p, o12);
+  c = oPixSort(c, uv, p, o16);
 
   return c;
 }
@@ -578,15 +416,10 @@ void main() {
   if (PASSINDEX == 1)  {
     uv = pre(uv);
     gl_FragColor = vec4(draw(uv));
-    gl_FragColor = vec4(
-      draw(uv),
-      draw(uv+.003),
-      draw(uv-.003),
-      1.
-    );
   }
   else if (PASSINDEX == 2) {
     vec4 c = texture2D(renderBuffer, uv);
-    gl_FragColor = post(c);
+    // gl_FragColor = post(c);
+    gl_FragColor = c;
   }
 }

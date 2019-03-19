@@ -53,3 +53,92 @@ vec3 bloom(vec2 dir) {
   vec3 col = blur(backbuffer, uv, resolution, dir).rgb;
   return col * col * col;
 }
+
+vec4 oInvert(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch == 1.) {
+    c.rgb = 1. - c.rgb;
+  } else {
+    c.rgb = mix(c.rgb, 1. - c.rgb, step(.4, noise3(vec3(uv.xx, time * 3. * ch) * ch * 3.)));
+  }
+
+  c.rgb = mix(c.rgb, 1. - c.rgb, step(.4, noise3(vec3(uv.xx, time * 3. * ch) * ch * 3.)));
+  return c;
+}
+
+vec4 oHue(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.0) {
+    c.rgb = hueRot(c.rgb, time * ch - length(p) * .7 * ch);
+  }
+
+  return c;
+}
+
+vec4 oRainbow(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.) {
+    c.rgb = hueRot(c.rgb, time * ch + uv.y + uv.x);
+  }
+  return c;
+}
+
+vec4 oRgl(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.) {
+    c.r = texture2D(renderBuffer, fract(uv + vec2(sin(time * 30.) * sin(time * 183.) * sin(time * 73.) * .1, 0) + .01)).g;
+  }
+  return c;
+}
+
+vec4 oPixSort(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.) {
+    if (texture2D(renderBuffer, floor(uv * 320.) / 320.).g > .5) {
+      vec3 x = vec3(.0);///texture2D(renderBuffer, fract(uv)).rgb;
+      // vec2 du = rot(vec2(1, 0), noise2(floor(uv * 3.)) * 10.);
+      float nh = noise2(hexCenter(p * 1.5) + time *.04);
+      vec2 du = rot(vec2(1, 0), nh * 10.);
+
+      // float xi = mod(uv.x * resolution.x, 700.) / 700.;
+      float xi = uv.x;
+      for (int i = 0; i < 200; i++) {
+        float fi = float(i) * nh * 5.;
+        // vec3 r = texture2D(renderBuffer, uv + vec2(fi / resolution.x, 0)).rgb;
+        vec3 r = texture2D(renderBuffer, fract(uv + du * (fi / resolution.x))).rgb;
+        if (abs(length(r) - xi) < .03) {
+          x = r;
+          break;
+        }
+      }
+      c.rgb = x.grb *3.;
+    }
+  }
+
+  return c;
+}
+
+// Fake mosh
+vec4 oMosh(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.) {
+    float nx = blockNoise(uv * 2.7, fract(time * .1)) *.1;
+    float ny = blockNoise(uv * 1.8, fract(time * .2)) *.1;
+    c.rgb = mix(c.rgb, vec3(
+      c.r * ch / texture2D(renderBuffer, fract(uv + vec2(nx, ny) + .01)).b,
+      c.g * ch / texture2D(renderBuffer, fract(uv + vec2(nx, ny) + .03)).b,
+      c.b / texture2D(renderBuffer, fract(uv + vec2(nx, ny) + .01)).r
+    ), ch * .2);
+  }
+  return c;
+}
+
+// glichy noise
+vec4 oRgb(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.) {
+    c.r += step(.99, blockNoise(uv *1.7, fract(time * .1 * ch)));
+    c.gb += step(.99, blockNoise(uv *2.4, fract(time * .1 * ch)));
+  }
+  return c;
+}
+
+vec4 oRgbSwap1(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > 0.)  {
+    c = texture2D(v1, asin(c.rg) * 0.3 + 0.5);
+  }
+  return c;
+}

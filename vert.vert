@@ -17,7 +17,7 @@ void main() {
   t = time*.2;
   float i = vertexId + sin(vertexId*.1) * .1;
 
-  i+=t;
+  i+=t +i;
 
   vec3 pos = vec3(
     sin(i * 2.) * sin(t * .2 + i),
