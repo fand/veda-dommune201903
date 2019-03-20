@@ -67,21 +67,6 @@ float cc(in float c) {
   return texture2D(midi, vec2(176. / 256., c / 128.)).x * 2.;
 }
 
-float stripes(in vec2 uv) {
-  vec2 uv2 = rot(uv, .5);
-  float b = exp(fract(beat * 2.) * -4.);
-
-  float fy = floor(uv2.y * 64.);
-  float freq = noise2(vec2(fy, time * 0.01)) * 15. + 2.;
-  float timeFactor = noise2(vec2(fy)) * 10.1;
-
-  float x = uv2.x;
-  float c = sin(x * freq + timeFactor * b * PI);
-
-  c *= min(1., length(uv - .5)) * .6;
-  return c;
-}
-
 float rings(in vec2 uv) {
   uv = uv * 2. - 1.;
   float b = exp(beat * -4.);
@@ -122,7 +107,7 @@ float dBalls(in vec2 uv) {
   // ring
   float l = abs(length(p) - r);
   c += .008 / l;
-  // c *= volume;
+  c *= volume * 10.;
 
   float t = exp(fract(beat) * -10.);
   t = (1. - t) * loopLength + time;
@@ -140,6 +125,24 @@ float dBalls(in vec2 uv) {
   return c;
 }
 
+float dStripes(in vec2 uv) {
+  vec2 uv0 = uv;
+
+  float b = exp(fract(beat * 2.) * -4.);
+
+  float fy = floor(uv.x * 64.);
+  float freq = noise2(vec2(fy, time * 0.01)) * 15. + 2.;
+  float timeFactor = noise2(vec2(fy)) * 10.1;
+
+  float y = uv.y;
+  float c = sin(y * freq + timeFactor * b * PI);
+
+  // vignette
+  float l0 = length(uv0 - .5) * 2.;
+  c *= clamp(1. - l0, 0.05, 1.);
+
+  return c;
+}
 
 float star(in vec2 uv, in vec2 star) {
   vec2 u1 = uv - star;
@@ -373,7 +376,7 @@ vec4 draw(in vec2 uv) {
   float m7 = cc(7.);
 
   if (o48 > .0) c += dBalls(uv) * m0;
-  // if (o49 > .0) c += dStripes(uv) * m1;
+  if (o49 > .0) c += dStripes(uv) * m1;
   // if (o50 > .0) c += dRing(uv) * m2;
   // if (o50 > .0) c += dTri(uv) * m2;
   // if (o51 > .0) c += dDia(uv) * m3;
