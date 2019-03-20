@@ -118,11 +118,12 @@ vec4 oMosh(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
   if (ch > 0.) {
     float nx = blockNoise(uv * 2.7, fract(time * .1)) *.1;
     float ny = blockNoise(uv * 1.8, fract(time * .2)) *.1;
+    vec2 nxy = vec2(nx, ny);
     c.rgb = mix(c.rgb, vec3(
-      c.r * ch / texture2D(renderBuffer, fract(uv + vec2(nx, ny) + .01)).b,
-      c.g * ch / texture2D(renderBuffer, fract(uv + vec2(nx, ny) + .03)).b,
-      c.b / texture2D(renderBuffer, fract(uv + vec2(nx, ny) + .01)).r
-    ), ch * .2);
+      c.r / texture2D(renderBuffer, fract(uv + nxy + .01)).g,
+      c.g / texture2D(renderBuffer, fract(uv + nxy + .02)).b,
+      c.b / texture2D(renderBuffer, fract(uv + nxy + .03)).r
+    ), ch * .5);
   }
   return c;
 }
@@ -193,5 +194,18 @@ vec4 oBlink(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
     // c = 1. - c;
   }
 
+  return c;
+}
+
+vec4 oFlow(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
+  if (ch > .0) {
+    vec2 div = vec2(32., 24.);
+    float a = noise3(vec3(floor(uv * div) / div, time * 0.02));
+    a = mod(floor(a * 20.), 8.0) * (2. * PI / 6.);
+    uv += rot(vec2(0.003, 0) * sin(a + uv.x + uv.y + time), a);
+
+    c = texture2D(backbuffer, uv);
+    c.r = texture2D(backbuffer, uv + .001).r;
+  }
   return c;
 }

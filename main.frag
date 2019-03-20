@@ -1,13 +1,14 @@
 /*{
   glslify: true,
   frameskip: 1,
-  pixelRatio: 1,
+  pixelRatio: 2,
   audio: true,
+  midi: true,
   osc: 3333,
 
-  vertexCount: 1000,
+  vertexCount: 30,
   vertexMode: "LINES",
-  // vertexMode: "TRIANGLES",
+  vertexMode: "TRIANGLES",
   // vertexMode: "POINTS",
 
   "IMPORTED": {
@@ -33,6 +34,7 @@ uniform sampler2D renderBuffer;
 uniform sampler2D vertBuffer;
 uniform sampler2D osc_note;
 uniform sampler2D osc_beat;
+uniform sampler2D midi;
 uniform sampler2D v1;
 uniform sampler2D v2;
 uniform sampler2D v3;
@@ -58,6 +60,10 @@ float loopLength;
 void initGlobals() {
   beat = texture2D(osc_beat, vec2(0)).r;
   loopLength = texture2D(osc_beat, vec2(1)).r;
+}
+
+float cc(in float c) {
+  return texture2D(midi, vec2(176. / 256., c / 128.)).x * 2.;
 }
 
 float stripes(in vec2 uv) {
@@ -126,29 +132,14 @@ float stars(in vec2 uv) {
   float b = exp(fract(beat * 3.) * - 4.0);
   // uv /= 1. + sin(beat) * 2.;
 
-  // c1 *= 2.;
-  // c2 *= 2.;
-  // c3 *= 2.;
-
   float bt = time * PI / 7.5; // 15sec
 
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 5; i++) {
     c1 = rot(c1, bt);
     c += star(uv, c1 * (1. - 0.2* float(i) / 8.));
   }
 
-  // c1 = rot(c1, bt);
-  // c2 = rot(c1, bt);
-  // c3 = rot(c2, bt);
-  // // c1 = rot(c1 * (1. + sin(time + 1.) * 0.2), time);
-  // // c2 = rot(c2 * (1. + sin(time + 2.) * 0.1), time);
-  // // c3 = rot(c3 * (1. + sin(time + 3.) * 0.2), time);
-  //
-  // c += star(uv, c1);
-  // c += star(uv, c2);
-  // c += star(uv, c3);
-  return c;
-  // return smoothstep(.2, .8, c);
+  return c * sin(1. - length(uv));
 }
 
 float line(float x, float y) {
@@ -338,15 +329,24 @@ vec4 draw(in vec2 uv) {
   float o54 = osc(54.);
   float o56 = osc(56.);
 
-  if (o48 > .0) c += stripes(uv);
-  if (o49 > .0) c += stars(uv);
-  if (o50 > .0) c += rings(uv);
-  if (o51 > .0) c += dia(uv);
-  if (o52 > .0) c += balls(uv);
-  if (o53 > .0) c += arcBalls(uv) * 1.0;
-  if (o54 > .0) c += metaballs(uv);
+  float m0 = cc(0.);
+  float m1 = cc(1.);
+  float m2 = cc(2.);
+  float m3 = cc(3.);
+  float m4 = cc(4.);
+  float m5 = cc(5.);
+  float m6 = cc(6.);
+  float m7 = cc(7.);
 
-  if (o56 > .0) c += texture2D(vertBuffer, uv);
+  if (o48 > .0) c += stripes(uv) * m0;
+  if (o49 > .0) c += stars(uv) * m1;
+  if (o50 > .0) c += rings(uv) * m2;
+  if (o51 > .0) c += dia(uv) * m3;
+  if (o52 > .0) c += balls(uv) * m4;
+  if (o53 > .0) c += arcBalls(uv) * m5;
+  if (o54 > .0) c += metaballs(uv) * m6;
+
+  if (o56 > .0) c += texture2D(vertBuffer, uv) * m7;
 
   // return smoothstep(.2, 4, c);
   return c;
@@ -396,6 +396,7 @@ vec4 post(in vec4 c) {
   float o27 = osc(27.);
   float o28 = osc(28.);
   float o29 = osc(29.);
+  float o30 = osc(30.);
 
   c = oChroma(c, uv, p, o27);
   c = oBloom(c, uv, p, o28);
@@ -408,6 +409,7 @@ vec4 post(in vec4 c) {
   c = oRgl(c, uv, p, o21);
   c = oPixSort(c, uv, p, o22);
   c = oBlink(c, uv, p, o29);
+  c = oFlow(c, uv, p, o30);
 
   c = oRgbSwap1(c, uv, p, o24);
   c = oRgbSwap2(c, uv, p, o25);
@@ -430,6 +432,5 @@ void main() {
   else if (PASSINDEX == 2) {
     vec4 c = texture2D(renderBuffer, uv);
     gl_FragColor = post(c);
-    // gl_FragColor = c;
   }
 }
