@@ -8,7 +8,7 @@
 
   vertexCount: 30,
   vertexMode: "LINES",
-  vertexMode: "TRIANGLES",
+  // vertexMode: "TRIANGLES",
   // vertexMode: "POINTS",
 
   "IMPORTED": {
@@ -38,6 +38,7 @@ uniform sampler2D midi;
 uniform sampler2D v1;
 uniform sampler2D v2;
 uniform sampler2D v3;
+uniform float volume;
 
 #define PI 3.141593
 #define SQRT3 1.7320508
@@ -108,6 +109,37 @@ float rings(in vec2 uv) {
 
   return c;
 }
+
+float dBalls(in vec2 uv) {
+  vec2 p = uv * 2. - 1.;
+  p.x *= resolution.x / resolution.y;
+  float a = atan(p.y, p.x);
+  float c = 0.0;
+
+  float r = .5;
+  r += volume;
+
+  // ring
+  float l = abs(length(p) - r);
+  c += .008 / l;
+  // c *= volume;
+
+  float t = exp(fract(beat) * -10.);
+  t = (1. - t) * loopLength + time;
+
+  // r += sin(t) * .3;
+
+  // balls
+  float ct = cos(t), st = sin(t);
+  vec2 c1 = vec2(ct, st) * r;
+  vec2 c2 = -c1;
+
+  c += .03 / length(p - c1);
+  c += .03 / length(p - c2);
+
+  return c;
+}
+
 
 float star(in vec2 uv, in vec2 star) {
   vec2 u1 = uv - star;
@@ -329,6 +361,8 @@ vec4 draw(in vec2 uv) {
   float o54 = osc(54.);
   float o56 = osc(56.);
 
+  float o57 = osc(57.);
+
   float m0 = cc(0.);
   float m1 = cc(1.);
   float m2 = cc(2.);
@@ -338,15 +372,15 @@ vec4 draw(in vec2 uv) {
   float m6 = cc(6.);
   float m7 = cc(7.);
 
-  if (o48 > .0) c += stripes(uv) * m0;
-  if (o49 > .0) c += stars(uv) * m1;
-  if (o50 > .0) c += rings(uv) * m2;
-  if (o51 > .0) c += dia(uv) * m3;
-  if (o52 > .0) c += balls(uv) * m4;
-  if (o53 > .0) c += arcBalls(uv) * m5;
-  if (o54 > .0) c += metaballs(uv) * m6;
-
-  if (o56 > .0) c += texture2D(vertBuffer, uv) * m7;
+  if (o48 > .0) c += dBalls(uv) * m0;
+  // if (o49 > .0) c += dStripes(uv) * m1;
+  // if (o50 > .0) c += dRing(uv) * m2;
+  // if (o50 > .0) c += dTri(uv) * m2;
+  // if (o51 > .0) c += dDia(uv) * m3;
+  // if (o52 > .0) c += balls(uv) * m4;
+  // if (o54 > .0) c += metaballs(uv) * m6;
+  //
+  // if (o56 > .0) c += texture2D(vertBuffer, uv) * m7;
 
   // return smoothstep(.2, 4, c);
   return c;
