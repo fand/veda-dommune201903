@@ -1,12 +1,12 @@
 /*{
   glslify: true,
   frameskip: 1,
-  pixelRatio: 2,
+  pixelRatio: 1,
   audio: true,
   midi: true,
   osc: 3333,
 
-  vertexCount: 30,
+  vertexCount: 3000,
   vertexMode: "LINES",
   // vertexMode: "TRIANGLES",
   // vertexMode: "POINTS",
@@ -432,11 +432,12 @@ vec4 draw(in vec2 uv) {
   if (o49 > .0) c += dStripes(uv) * m1;
   if (o50 > .0) c += dTunnel(uv) * m2;
   if (o51 > .0) c += dTri(uv) * m3;
+  if (o52 > .0) c += texture2D(vertBuffer, uv) * m4;
   // if (o51 > .0) c += dDia(uv) * m3;
   // if (o52 > .0) c += balls(uv) * m4;
   // if (o54 > .0) c += metaballs(uv) * m6;
   //
-  // if (o56 > .0) c += texture2D(vertBuffer, uv) * m7;
+
 
   // return smoothstep(.2, 4, c);
   return c;
