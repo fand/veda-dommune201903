@@ -58,10 +58,10 @@ vec4 oInvert(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
   if (ch == 1.) {
     c.rgb = 1. - c.rgb;
   } else {
-    c.rgb = mix(c.rgb, 1. - c.rgb, step(.4, noise3(vec3(uv.xx, time * 3. * ch) * ch * 3.)));
+    c.rgb = mix(c.rgb, 1. - c.rgb, step(.4, snoise(vec3(uv.xx, time * 3. * ch) * ch * 3.)));
   }
 
-  c.rgb = mix(c.rgb, 1. - c.rgb, step(.4, noise3(vec3(uv.xx, time * 3. * ch) * ch * 3.)));
+  c.rgb = mix(c.rgb, 1. - c.rgb, step(.4, snoise(vec3(uv.xx, time * 3. * ch) * ch * 3.)));
   return c;
 }
 
@@ -91,8 +91,8 @@ vec4 oPixSort(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
   if (ch > 0.) {
     if (texture2D(renderBuffer, floor(uv * 320.) / 320.).g > .5) {
       vec3 x = vec3(.0);///texture2D(renderBuffer, fract(uv)).rgb;
-      // vec2 du = rot(vec2(1, 0), noise2(floor(uv * 3.)) * 10.);
-      float nh = noise2(hexCenter(p * 1.5) + time *.04);
+      // vec2 du = rot(vec2(1, 0), snoise(floor(uv * 3.)) * 10.);
+      float nh = snoise(hexCenter(p * 1.5) + time *.04);
       vec2 du = rot(vec2(1, 0), nh * 10.);
 
       // float xi = mod(uv.x * resolution.x, 700.) / 700.;
@@ -200,7 +200,7 @@ vec4 oBlink(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
 vec4 oFlow(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
   if (ch > .0) {
     vec2 div = vec2(32., 24.);
-    float a = noise3(vec3(floor(uv * div) / div, time * 0.02));
+    float a = snoise(vec3(floor(uv * div) / div, time * 0.02));
     a = mod(floor(a * 20.), 8.0) * (2. * PI / 6.);
     uv += rot(vec2(0.003, 0) * sin(a + uv.x + uv.y + time), a);
 

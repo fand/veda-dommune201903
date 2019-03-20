@@ -1,14 +1,14 @@
 vec2 iWiggle(in vec2 uv, in float ch) {
   if (ch > 0.) {
-    uv.x += noise2(vec2(time * 10.)) * .01 * ch;
-    uv.y += noise2(vec2(time * 8. + 1.)) * .01 * ch;
+    uv.x += snoise(vec2(time * 10.)) * .01 * ch;
+    uv.y += snoise(vec2(time * 8. + 1.)) * .01 * ch;
   }
   return uv;
 }
 
 vec2 iSplit(in vec2 uv, in float ch) {
   if (ch > 0.) {
-    float ntt = noise2(vec2(time));
+    float ntt = snoise(vec2(time));
     if (ntt > .1) {
         uv.x = fract(uv.x * 2.);
     }
@@ -29,7 +29,7 @@ vec2 iRot(in vec2 uv, in float ch) {
 
 vec2 iXShift(in vec2 uv, in float ch) {
   if (ch > 0.) {
-    float ny = noise3(vec3(floor(uv.yy * 40.), time* 30.));
+    float ny = snoise(vec3(floor(uv.yy * 40.), time* 30.));
     uv.x += step(1., ny * 4. * osc(4.)) * ny * .04 * ch * ch;
   }
   return uv;
@@ -62,7 +62,7 @@ vec2 iKaleido(in vec2 uv, in float ch) {
 
 vec2 iZoom(in vec2 uv, in float ch) {
   if (ch > .1) {
-    // float nt = noise2(vec2(time));
+    // float nt = snoise(vec2(time));
     float zoom = sin(time * 1.4) * sin(time * 2.37) * .5 + .5;
     uv = uv + vec2(
       sin(time * 2.8) + cos(time * 3.7),

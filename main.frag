@@ -43,12 +43,17 @@ uniform float volume;
 #define PI 3.141593
 #define SQRT3 1.7320508
 
-#pragma glslify: blur = require('glsl-fast-gaussian-blur')
-#pragma glslify: noise2 = require('glsl-noise/simplex/2d')
-#pragma glslify: noise3 = require('glsl-noise/simplex/3d')
-#pragma glslify: import('./util')
-#pragma glslify: import('./pre')
-#pragma glslify: import('./post')
+// #pragma glslify: blur = require('glsl-fast-gaussian-blur')
+// #pragma glslify: noise2 = require('glsl-noise/simplex/2d')
+// #pragma glslify: noise3 = require('glsl-noise/simplex/3d')
+// #pragma glslify: import('./util')
+// #pragma glslify: import('./pre')
+// #pragma glslify: import('./post')
+#include "./noise.glsl"
+#include "./util.glsl"
+#include "./blur.glsl"
+#include "./pre.glsl"
+#include "./post.glsl"
 
 struct Camera {
   vec3 pos;
@@ -131,8 +136,8 @@ float dStripes(in vec2 uv) {
   float b = exp(fract(beat * 2.) * -4.);
 
   float fy = floor(uv.x * 64.);
-  float freq = noise2(vec2(fy, time * 0.01)) * 15. + 2.;
-  float timeFactor = noise2(vec2(fy)) * 10.1;
+  float freq = snoise(vec2(fy, time * 0.01)) * 15. + 2.;
+  float timeFactor = snoise(vec2(fy)) * 10.1;
 
   float y = uv.y;
   float c = sin(y * freq + timeFactor * b * PI);
@@ -140,6 +145,25 @@ float dStripes(in vec2 uv) {
   // vignette
   float l0 = length(uv0 - .5) * 2.;
   c *= clamp(1. - l0, 0.05, 1.);
+
+  return c;
+}
+
+float dTunnel(in vec2 uv) {
+  vec2 uv0 = uv;
+  vec2 p = uv * 2. - 1.;
+  p.x *= resolution.x / resolution.y;
+
+  float b = exp(fract(beat) * -4.);
+  b = (1. - b) * 3.;
+
+  float c = 0.;
+
+  float l = length(p) - b - time * 0.2;
+
+  c += sin(l * 8. - time) * sin(l * 13. - time* .3) * b;
+  c += sin(l * 13. + time * 2.) * sin(l * 3. - time* .8);
+  // c *= smoothstep(.3, 1., fract(l * 3000. + time));
 
   return c;
 }
@@ -377,7 +401,7 @@ vec4 draw(in vec2 uv) {
 
   if (o48 > .0) c += dBalls(uv) * m0;
   if (o49 > .0) c += dStripes(uv) * m1;
-  // if (o50 > .0) c += dRing(uv) * m2;
+  if (o50 > .0) c += dTunnel(uv) * m2;
   // if (o50 > .0) c += dTri(uv) * m2;
   // if (o51 > .0) c += dDia(uv) * m3;
   // if (o52 > .0) c += balls(uv) * m4;

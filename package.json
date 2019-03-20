@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "glsl-fast-gaussian-blur": "^1.0.2",
-    "glsl-noise": "^0.0.0"
+    "glsl-noise": "^0.0.0",
+    "glslify-import": "^3.1.0"
   }
 }
