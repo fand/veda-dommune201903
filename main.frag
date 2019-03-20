@@ -168,6 +168,35 @@ float dTunnel(in vec2 uv) {
   return c;
 }
 
+vec4 dTri(in vec2 uv) {
+  vec2 p = uv * 2. - 1.;
+  p.x *= resolution.x / resolution.y;
+  vec4 c = vec4(0.0);
+  float b = exp(beat * -10.) * 8.;
+
+  p = rot(p, time-b);
+
+  float a = atan(p.y, p.x);
+  if (a < -PI/3.) {
+    p = rot(p, PI * 4. / 3.);
+  }
+  else if (a > PI / 3.) {
+    p = rot(p, -PI * 4. / 3.);
+  }
+
+  c.b += .07 / abs(p.x - b * 2. + volume);
+  c.rg += .03 / abs(p.x - b * 4. + volume);
+  p *= .2 + length(p);
+  p = rot(p, .1 + time +length(p) + a);
+  // p *= .8;
+  c.bg += .09 / abs(p.x - b * 8.2 + volume);
+
+  c.r += sin(p.x * 3. - time) * sin(p.x *7.3 - time * 3.3) * 3.;
+
+  return c;
+}
+
+
 float star(in vec2 uv, in vec2 star) {
   vec2 u1 = uv - star;
   float l = length(u1);
@@ -402,7 +431,7 @@ vec4 draw(in vec2 uv) {
   if (o48 > .0) c += dBalls(uv) * m0;
   if (o49 > .0) c += dStripes(uv) * m1;
   if (o50 > .0) c += dTunnel(uv) * m2;
-  // if (o50 > .0) c += dTri(uv) * m2;
+  if (o51 > .0) c += dTri(uv) * m3;
   // if (o51 > .0) c += dDia(uv) * m3;
   // if (o52 > .0) c += balls(uv) * m4;
   // if (o54 > .0) c += metaballs(uv) * m6;
