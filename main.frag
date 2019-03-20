@@ -1,7 +1,7 @@
 /*{
   glslify: true,
   frameskip: 1,
-  pixelRatio: 2,
+  pixelRatio: 1,
   audio: true,
   midi: true,
   osc: 3333,
@@ -45,6 +45,19 @@ uniform sampler2D v3;
 #pragma glslify: blur = require('glsl-fast-gaussian-blur')
 #pragma glslify: noise2 = require('glsl-noise/simplex/2d')
 #pragma glslify: noise3 = require('glsl-noise/simplex/3d')
+
+vec2 doModel(vec3 p);
+#pragma glslify: square = require('glsl-square-frame')
+#pragma glslify: camera = require('glsl-camera-ray')
+#pragma glslify: raytrace = require('glsl-raytrace', map = doModel, steps = 128)
+#pragma glslify: getNormal = require('glsl-sdf-normal', map = doModel)
+#pragma glslify: sdTorus = require('glsl-sdf-primitives/sdTorus')
+#pragma glslify: sdBox = require('glsl-sdf-primitives/sdBox')
+#pragma glslify: sdCylinder = require('glsl-sdf-primitives/sdCylinder')
+#pragma glslify: opU = require('glsl-sdf-ops/union')
+#pragma glslify: opS = require('glsl-sdf-ops/subtraction')
+#pragma glslify: smin = require('glsl-smooth-min')
+
 #pragma glslify: import('./util')
 #pragma glslify: import('./pre')
 #pragma glslify: import('./post')
@@ -173,7 +186,7 @@ float dia(in vec2 uv) {
   uv *= 1.5 + cos((time - beat) * PI / 3.);
   c *= .5 + cos(uv.x) + cos(uv.y);
 
-  // c /= length(uv) * 0.2;
+  c /= length(uv) * 0.2;
 
   // float fx = sin(uv.x * 4. * PI);
   // uv.y = abs(uv.y);
@@ -315,6 +328,55 @@ float metaballs(in vec2 uv) {
   );
 }
 
+vec2 doModel(vec3 p) {
+  p = mod(p, 4.) - 2.;
+
+  return vec2(sdBox(p, vec3(1.)), 0.);
+}
+
+vec3 doMaterial(vec3 p, vec3 n, float id) {
+  return vec3(0, 1, 1);
+}
+
+vec3 doLighting(vec3 p, vec3 n, vec3 rd, float id, vec3 mat) {
+   vec3 lin = vec3(0.0);
+
+   vec3 lig = normalize(vec3(1.0,0.7,0.9));
+   float dif = max(dot(n, lig),0.0);
+
+   lin += vec3(0.05);
+
+   return mat * lin;
+}
+
+vec4 ray(in vec2 uv) {
+  float cameraAngle  = 0. / 10.;
+  vec3 rayOrigin = vec3(3.5 * sin(cameraAngle), 3.0, 3.5 * cos(cameraAngle));
+  vec3 rayTarget = vec3(0, 0, 0);
+  vec2 screenPos = square(resolution);
+
+  vec3 rayDirection = camera(rayOrigin, rayTarget, screenPos, 2.);
+  // rayDirection.xy = rot(rayDirection.xy, sin(time / 10.) *2.);
+  // rayDirection.xz = rot(rayDirection.xz, sin(time / 5.) * 8.);
+
+  vec3 col = vec3(0.015);
+  vec2 res = raytrace(rayOrigin, rayDirection, 30., 0.003);
+
+  if (res.x > -0.5) {
+    vec3 pos = rayOrigin + res.x * rayDirection;
+    vec3 nor = getNormal(pos);
+    vec3 mal = doMaterial(pos, nor, res.y);
+
+    col = doLighting(pos, nor, rayDirection, res.x, mal);
+    col *= res.x;
+  }
+
+  // Color grading
+  col = pow(clamp(col,0.0,1.0), vec3(0.4));
+
+  return vec4(col, 1.);
+}
+
 vec4 draw(in vec2 uv) {
   float loopLength = 1.;
 
@@ -347,6 +409,8 @@ vec4 draw(in vec2 uv) {
   if (o54 > .0) c += metaballs(uv) * m6;
 
   if (o56 > .0) c += texture2D(vertBuffer, uv) * m7;
+
+  c += ray(uv);
 
   // return smoothstep(.2, 4, c);
   return c;

@@ -2,12 +2,54 @@
 # yarn lockfile v1
 
 
+glsl-camera-ray@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/glsl-camera-ray/-/glsl-camera-ray-1.0.0.tgz#e5adfe123c02bc818c7ddb3e409c273817a955ed"
+  integrity sha1-5a3+EjwCvIGMfds+QJwnOBepVe0=
+  dependencies:
+    glsl-look-at "^1.0.0"
+
 glsl-fast-gaussian-blur@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/glsl-fast-gaussian-blur/-/glsl-fast-gaussian-blur-1.0.2.tgz#95bc77f644a22f06e5ed58e128697f8b17290b08"
   integrity sha1-lbx39kSiLwbl7VjhKGl/ixcpCwg=
 
+glsl-look-at@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/glsl-look-at/-/glsl-look-at-1.0.0.tgz#633bb179541c2fd5e8f591d6d2dd9d451e289f7b"
+  integrity sha1-YzuxeVQcL9Xo9ZHW0t2dRR4on3s=
+
 glsl-noise@^0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/glsl-noise/-/glsl-noise-0.0.0.tgz#367745f3a33382c0eeec4cb54b7e99cfc1d7670b"
   integrity sha1-NndF86MzgsDu7Ey1S36Zz8HXZws=
+
+glsl-raytrace@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/glsl-raytrace/-/glsl-raytrace-1.0.0.tgz#5fd022180a36d69522e2644d300ff20966b078de"
+  integrity sha1-X9AiGAo21pUi4mRNMA/yCWaweN4=
+
+glsl-sdf-normal@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/glsl-sdf-normal/-/glsl-sdf-normal-1.0.0.tgz#0e3e90617a929f689ecabff73dd66e2821143aef"
+  integrity sha1-Dj6QYXqSn2ieyr/3PdZuKCEUOu8=
+
+glsl-sdf-ops@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/glsl-sdf-ops/-/glsl-sdf-ops-0.0.3.tgz#6a7c4091c940dad4c65ce63c85d8b1e821d9de21"
+  integrity sha1-anxAkclA2tTGXOY8hdix6CHZ3iE=
+
+glsl-sdf-primitives@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/glsl-sdf-primitives/-/glsl-sdf-primitives-0.0.1.tgz#7a2faced950f10f272730c642b75834b35895e70"
+  integrity sha1-ei+s7ZUPEPJycwxkK3WDSzWJXnA=
+
+glsl-smooth-min@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/glsl-smooth-min/-/glsl-smooth-min-1.0.0.tgz#93f00a06675be789933676e9210cd597ad5b1c57"
+  integrity sha1-k/AKBmdb54mTNnbpIQzVl61bHFc=
+
+glsl-square-frame@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/glsl-square-frame/-/glsl-square-frame-1.0.1.tgz#60f03b9c1309acda435be841d78194d8966d8533"
+  integrity sha1-YPA7nBMJrNpDW+hB14GU2JZthTM=
