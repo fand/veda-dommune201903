@@ -62,10 +62,12 @@ struct Camera {
 
 float beat;
 float loopLength;
+float v;
 
 void initGlobals() {
   beat = texture2D(osc_beat, vec2(0)).r;
   loopLength = texture2D(osc_beat, vec2(1)).r;
+  v = volume * knob(7.);
 }
 
 float rings(in vec2 uv) {
@@ -103,12 +105,12 @@ float dBalls(in vec2 uv) {
   float c = 0.0;
 
   float r = .5;
-  r += volume;
+  r += v;
 
   // ring
   float l = abs(length(p) - r);
   c += .008 / l;
-  c *= volume * 10.;
+  c *= v * 10.;
 
   float t = exp(fract(beat) * -10.);
   t = (1. - t) * loopLength + time;
@@ -180,12 +182,12 @@ vec4 dTri(in vec2 uv) {
     p = rot(p, -PI * 4. / 3.);
   }
 
-  c.b += .07 / abs(p.x - b * 2. + volume);
-  c.rg += .03 / abs(p.x - b * 4. + volume);
+  c.b += .07 / abs(p.x - b * 2. + v);
+  c.rg += .03 / abs(p.x - b * 4. + v);
   p *= .2 + length(p);
   p = rot(p, .1 + time +length(p) + a);
   // p *= .8;
-  c.bg += .09 / abs(p.x - b * 8.2 + volume);
+  c.bg += .09 / abs(p.x - b * 8.2 + v);
 
   c.r += sin(p.x * 3. - time) * sin(p.x *7.3 - time * 3.3) * 3.;
 
