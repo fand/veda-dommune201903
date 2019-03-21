@@ -209,3 +209,47 @@ vec4 oFlow(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
   }
   return c;
 }
+
+vec4 post(in vec4 c) {
+  vec2 uv = gl_FragCoord.xy / resolution;
+  vec2 p = (gl_FragCoord.xy * 2. - resolution) / min(resolution.x, resolution.y);
+
+  float o16 = osc(16.);
+  float o17 = osc(17.);
+  float o18 = osc(18.);
+  float o19 = osc(19.);
+  float o20 = osc(20.);
+  float o21 = osc(21.);
+  float o22 = osc(22.);
+  float o23 = osc(23.);
+  float o24 = osc(24.);
+  float o25 = osc(25.);
+  float o26 = osc(26.);
+  float o27 = osc(27.);
+  float o28 = osc(28.);
+  float o29 = osc(29.);
+  float o30 = osc(30.);
+
+  c = oChroma(c, uv, p, o27);
+  c = oBloom(c, uv, p, o28);
+
+  c = oRgb(c, uv, p, o16);
+  c = oMosh(c, uv, p, o17);
+  c = oInvert(c, uv, p, o18);
+  c = oHue(c, uv, p, o19);
+  c = oRainbow(c, uv, p, o20);
+  c = oRgl(c, uv, p, o21);
+  c = oPixSort(c, uv, p, o22);
+  c = oBlink(c, uv, p, o29);
+  c = oFlow(c, uv, p, o30);
+
+  c = oRgbSwap1(c, uv, p, o24);
+  c = oRgbSwap2(c, uv, p, o25);
+  c = oRgbSwap3(c, uv, p, o26);
+
+  // always on
+  c.rgb += oGodray(knob(1.) * 0.4);
+  c.rgb = hueRot(c.rgb, knob(2.));
+
+  return c;
+}

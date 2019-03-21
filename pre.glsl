@@ -89,3 +89,25 @@ vec2 iBor(in vec2 uv, in float ch) {
   }
   return uv;
 }
+
+vec2 pre(in vec2 uv) {
+  float o0 = osc(0.);
+  float o1 = osc(1.);
+  float o2 = osc(2.);
+  float o3 = osc(3.);
+  float o4 = osc(4.);
+  float o5 = osc(5.);
+  float o6 = osc(6.);
+  float o7 = osc(7.);
+
+  uv = iWiggle(uv, o0);
+  uv = iSplit(uv, o1);
+  uv = iRot(uv, o2);
+  uv = iXShift(uv, o3);
+  uv = iKaleido(uv, o4);
+  uv = iZoom(uv, o5);
+  uv = iDia(uv, o6);
+  uv = iBor(uv, o7);
+
+  return uv;
+}
