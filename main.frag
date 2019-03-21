@@ -192,6 +192,30 @@ vec4 dTri(in vec2 uv) {
   return c;
 }
 
+float hexLine(in vec2 p, in float width) {
+    p = abs(p);
+    float a = atan(p.y, p.x);
+    if (a < PI / 3.) {
+        p = rot(p, -PI / 3.);
+    }
+    return .01 / abs(p.y - .95);
+}
+
+float dHex(vec2 uv) {
+  vec2 p = uv * 2. - 1.;
+  p.x *= resolution.x / resolution.y;
+  float l = length(p);
+  float b = log(beat *8.);
+  float c = 0.;
+
+  float div = 4.;
+  vec2 hc = hexCenter(p * div) / div;
+  vec2 p2 = (p - hc) * div;
+  float n = snoise(hc * 3. + time * .03) * 3.;
+  c += hexLine(p2 * (1. + sin(n + time)), .1);
+
+  return c;
+}
 
 float star(in vec2 uv, in vec2 star) {
   vec2 u1 = uv - star;
@@ -429,7 +453,7 @@ vec4 draw(in vec2 uv) {
   if (o50 > .0) c += dTunnel(uv) * m2;
   if (o51 > .0) c += dTri(uv) * m3;
   if (o52 > .0) c += texture2D(vertBuffer, uv) * m4;
-  // if (o51 > .0) c += dDia(uv) * m3;
+  if (o53 > .0) c += dHex(uv) * m5;
   // if (o52 > .0) c += balls(uv) * m4;
   // if (o54 > .0) c += metaballs(uv) * m6;
   //
