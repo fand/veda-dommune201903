@@ -149,7 +149,7 @@ void main() {
   if (osc(58.) > .0) pos = oBox(pos, vertexId, vertexCount);
   if (osc(59.) > .0) pos = oQuad(pos, vertexId, vertexCount);
 
-  pos = oBox(pos, vertexId, vertexCount);
+  // pos = oBox(pos, vertexId, vertexCount);
 
   float noisiness = .0;
   pos.x += sin(vertexId * 2. + time * 30.) * .1 * noisiness;

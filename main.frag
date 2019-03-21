@@ -104,18 +104,18 @@ float dBalls(in vec2 uv) {
   float a = atan(p.y, p.x);
   float c = 0.0;
 
+  // TBD: modify p
+
   float r = .5;
-  r += v;
 
   // ring
-  float l = abs(length(p) - r);
-  c += .008 / l;
-  c *= v * 10.;
+  float l = abs(length(p) - r + v);
+  c += .01 / l;
 
   float t = exp(fract(beat) * -10.);
   t = (1. - t) * loopLength + time;
 
-  // r += sin(t) * .3;
+  // TBD: modify r, p
 
   // balls
   float ct = cos(t), st = sin(t);
@@ -442,16 +442,17 @@ vec4 draw(in vec2 uv) {
   float m6 = cc(6.);
   float m7 = cc(7.);
 
-  // if (o48 > .0) c += dBalls(uv) * m0;
-  // if (o49 > .0) c += dStripes(uv) * m1;
-  // if (o50 > .0) c += dTunnel(uv) * m2;
-  // if (o51 > .0) c += dTri(uv) * m3;
-  // if (o52 > .0) c += texture2D(vertBuffer, uv) * m4;
-  // if (o53 > .0) c += dHex(uv) * m5;
-  // if (o54 > .0) c += metaballs(uv) * m6;
-  // if (o55 > .0) c += dWaves(uv) * m7;
+  if (o48 > .0) c += dBalls(uv) * m0;
+  if (o49 > .0) c += dStripes(uv) * m1;
+  if (o50 > .0) c += dTunnel(uv) * m2;
+  if (o51 > .0) c += dTri(uv) * m3;
+  if (o52 > .0) c += texture2D(vertBuffer, uv) * m4;
+  if (o53 > .0) c += dHex(uv) * m5;
+  if (o54 > .0) c += metaballs(uv) * m6;
+  if (o55 > .0) c += dWaves(uv) * m7;
 
-  c += texture2D(vertBuffer, uv);
+  // c += texture2D(vertBuffer, uv);
+  c += dBalls(uv);
 
   return c;
 }
@@ -541,4 +542,5 @@ void main() {
     vec4 c = texture2D(renderBuffer, uv);
     gl_FragColor = post(c);
   }
+  // gl_FragColor += volume;
 }
