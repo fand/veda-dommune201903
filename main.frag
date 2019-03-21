@@ -291,39 +291,36 @@ float dia(in vec2 uv) {
 }
 
 float hexWave(in vec2 p) {
+  // TBD: freq change
+  float freq = 2.;
+
   float c = 0.0;
-
   p = abs(p);
-
   float a = atan(p.y, p.x);
   if (abs(a) > PI / 6.0) {
     p = rot(p, PI / 3.0);
   }
-  p.x *= p.x;
-  c += sin(p.x *2. * PI);
-  c *= 0.3 / p.x;
 
+  c += sin(p.x * freq * PI);
   return c;
 }
 
-float balls(in vec2 uv) {
-  uv = uv * 2. - 1.;
-  uv.x *= resolution.x / resolution.y;
+float dWaves(in vec2 uv) {
+  vec2 p = uv * 2. - 1.;
+  p.x *= resolution.x / resolution.y;
 
-  float c;
+  float c = 0.;
 
   float b = 1. - exp(beat * -8.0);
   float d = b * 2.;
 
-  uv *= 1.4;
-  c += hexWave(uv - vec2(.3, 0.4) * d);
-  c /= hexWave(uv - vec2(-.6, 0.2) * d);
-  c /= hexWave(uv - vec2(.5, -.1) * d);
-  c /= hexWave(uv - vec2(-.4, -.3) * d);
-  c /= hexWave(uv - vec2(-.2, .5) * d);
-  c /= hexWave(uv - vec2(.2, -.5) * d);
+  p *= 2.4;
+  c += hexWave(p - vec2(.3, 0.4) * d);
+  c += hexWave(p - vec2(-.6, 0.2) * d);
+  c += hexWave(p - vec2(.5, -.1) * d);
 
-  // c = clamp(0.,1., c) / length(uv);
+  float l = length(p);
+  c = clamp(0.,1., c) / l;
   return c;
 }
 
@@ -429,6 +426,7 @@ vec4 draw(in vec2 uv) {
   float o52 = osc(52.);
   float o53 = osc(53.);
   float o54 = osc(54.);
+  float o55 = osc(55.);
   float o56 = osc(56.);
 
   float o57 = osc(57.);
@@ -449,7 +447,7 @@ vec4 draw(in vec2 uv) {
   if (o52 > .0) c += texture2D(vertBuffer, uv) * m4;
   if (o53 > .0) c += dHex(uv) * m5;
   if (o54 > .0) c += metaballs(uv) * m6;
-  // if (o52 > .0) c += balls(uv) * m4;
+  if (o55 > .0) c += dWaves(uv) * m7;
 
   return c;
 }
