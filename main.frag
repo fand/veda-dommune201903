@@ -44,17 +44,7 @@ uniform float volume;
 #include "./noise.glsl"
 #include "./util.glsl"
 #include "./blur.glsl"
-
-float beat;
-float loopLength;
-float v;
-
-void initGlobals() {
-  beat = texture2D(osc_beat, vec2(0)).r;
-  loopLength = texture2D(osc_beat, vec2(1)).r;
-  v = volume * knob(7.);
-}
-
+#include "./globals.glsl"
 #include "./pre.glsl"
 #include "./post.glsl"
 #include "./draw.glsl"
@@ -237,31 +227,7 @@ float metaballs(in vec2 uv) {
 }
 
 vec4 draw(in vec2 uv) {
-  float loopLength = 1.;
-
   vec4 c = vec4(0);
-
-  float o48 = osc(48.);
-  float o49 = osc(49.);
-  float o50 = osc(50.);
-  float o51 = osc(51.);
-  float o52 = osc(52.);
-  float o53 = osc(53.);
-  float o54 = osc(54.);
-  float o55 = osc(55.);
-  float o56 = osc(56.);
-
-  float o57 = osc(57.);
-
-  float m0 = cc(0.);
-  float m1 = cc(1.);
-  float m2 = cc(2.);
-  float m3 = cc(3.);
-  float m4 = cc(4.);
-  float m5 = cc(5.);
-  float m6 = cc(6.);
-  float m7 = cc(7.);
-
   if (o48 > .0) c += dBalls(uv) * m0;
   if (o49 > .0) c += dStripes(uv) * m1;
   if (o50 > .0) c += dTunnel(uv) * m2;

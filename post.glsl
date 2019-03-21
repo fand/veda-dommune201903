@@ -214,22 +214,6 @@ vec4 post(in vec4 c) {
   vec2 uv = gl_FragCoord.xy / resolution;
   vec2 p = (gl_FragCoord.xy * 2. - resolution) / min(resolution.x, resolution.y);
 
-  float o16 = osc(16.);
-  float o17 = osc(17.);
-  float o18 = osc(18.);
-  float o19 = osc(19.);
-  float o20 = osc(20.);
-  float o21 = osc(21.);
-  float o22 = osc(22.);
-  float o23 = osc(23.);
-  float o24 = osc(24.);
-  float o25 = osc(25.);
-  float o26 = osc(26.);
-  float o27 = osc(27.);
-  float o28 = osc(28.);
-  float o29 = osc(29.);
-  float o30 = osc(30.);
-
   c = oChroma(c, uv, p, o27);
   c = oBloom(c, uv, p, o28);
 
