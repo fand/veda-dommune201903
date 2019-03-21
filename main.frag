@@ -258,4 +258,6 @@ void main() {
     vec4 c = texture2D(renderBuffer, uv);
     gl_FragColor = post(c);
   }
+
+  // gl_FragColor += o8;
 }

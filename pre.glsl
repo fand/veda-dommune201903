@@ -90,6 +90,24 @@ vec2 iBor(in vec2 uv, in float ch) {
   return uv;
 }
 
+vec2 iFlipX(in vec2 uv, in float ch) {
+  if (ch > .0) {
+    uv.x -= .5;
+    uv.x *= step(.5, fract(time * 20.)) * 2. - 1.;
+    uv.x += .5;
+  }
+  return uv;
+}
+
+vec2 iFlipY(in vec2 uv, in float ch) {
+  if (ch > .0) {
+    uv.y -= .5;
+    uv.y *= step(.5, fract(time * 20.)) * 2. - 1.;
+    uv.y += .5;
+  }
+  return uv;
+}
+
 vec2 pre(in vec2 uv) {
   uv = iWiggle(uv, o0);
   uv = iSplit(uv, o1);
@@ -99,6 +117,8 @@ vec2 pre(in vec2 uv) {
   uv = iZoom(uv, o5);
   uv = iDia(uv, o6);
   uv = iBor(uv, o7);
+  uv = iFlipX(uv, o8);
+  uv = iFlipY(uv, o9);
 
   return uv;
 }

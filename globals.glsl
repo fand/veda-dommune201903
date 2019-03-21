@@ -10,6 +10,8 @@ float o4;
 float o5;
 float o6;
 float o7;
+float o8;
+float o9;
 
 float o16;
 float o17;
@@ -60,6 +62,8 @@ void initGlobals() {
   o5 = osc(5.);
   o6 = osc(6.);
   o7 = osc(7.);
+  o8 = osc(8.);
+  o9 = osc(9.);
 
   // For post fx
   o16 = osc(16.);
