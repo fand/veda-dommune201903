@@ -391,7 +391,7 @@ float metaball(in vec2 uv) {
 
   uv.x += uv.x * cos(uv.x * PI + time);
 
-  float nb = 16.;
+  float nb = 2.;
 
   c += cos(uv.x * nb * PI) * cos(uv.y * nb * 2. * PI);
 
@@ -402,25 +402,19 @@ float metaball(in vec2 uv) {
 }
 
 float metaballs(in vec2 uv) {
-  uv = uv * 2. - 1.;
-  uv.x *= resolution.x / resolution.y;
+  vec2 p = uv * 2. - 1.;
+  p.x *= resolution.x / resolution.y;
+  float l = length(p);
+  float b = exp(beat * -4.);
 
-  uv *= 1.2;
+  // TBD: abs, rot
 
-  uv = rot(uv, sin(length(uv) * 3.));
+  float c = 0.;
 
-  float p6 = PI / 3.;
+  // TBD: repeat
+  c += metaball(p + sin(time) * .1);
 
-  float d = .1 - exp(beat * -5.) * 0.2 * sign(mod(time, 2.) - 1.);
-
-  return (
-    metaball(uv + .1) +
-    metaball(rot(uv, p6) + d) +
-    metaball(rot(uv, p6 * 2.) + d) +
-    metaball(rot(uv, p6 * 3.) + d) +
-    metaball(rot(uv, p6 * 4.) + d) +
-    metaball(rot(uv, p6 * 5.) + d)
-  );
+  return c;
 }
 
 vec4 draw(in vec2 uv) {
@@ -454,12 +448,9 @@ vec4 draw(in vec2 uv) {
   if (o51 > .0) c += dTri(uv) * m3;
   if (o52 > .0) c += texture2D(vertBuffer, uv) * m4;
   if (o53 > .0) c += dHex(uv) * m5;
+  if (o54 > .0) c += metaballs(uv) * m6;
   // if (o52 > .0) c += balls(uv) * m4;
-  // if (o54 > .0) c += metaballs(uv) * m6;
-  //
 
-
-  // return smoothstep(.2, 4, c);
   return c;
 }
 
