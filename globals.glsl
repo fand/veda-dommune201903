@@ -49,7 +49,7 @@ float m7;
 void initGlobals() {
   beat = texture2D(osc_beat, vec2(0)).r;
   loopLength = texture2D(osc_beat, vec2(1)).r;
-  v = volume * knob(7.);
+  v = volume * knob(7.) * 3.;
 
   // For pre fx
   o0 = osc(0.);

@@ -29,10 +29,10 @@ vec2 iRot(in vec2 uv, in float ch) {
 }
 
 vec2 iXShift(in vec2 uv, in float ch) {
-  if (ch > 0.) {
-    float ny = snoise(vec3(floor(uv.yy * 40.), time* 30.));
-    uv.x += step(1., ny * 4. * osc(4.)) * ny * .04 * ch * ch;
-  }
+  // if (ch > 0.) {
+    float ny = snoise(vec2(floor(uv.y * 40.), time * 30.));
+    uv.x += step(1., ny * 4.) * ny * .04 * ch * ch;
+  // }
   return uv;
 }
 

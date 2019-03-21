@@ -4,6 +4,7 @@
   "vertexMode": "LINES",
   audio: true,
   osc: 3333,
+  midi: true,
 }*/
 precision mediump float;
 attribute float vertexId;
@@ -15,12 +16,23 @@ varying vec4 v_color;
 uniform float volume;
 uniform sampler2D osc_note;
 uniform sampler2D osc_beat;
+uniform sampler2D midi;
 
 #define PI 3.141593
 
+float osc(in float ch) {
+  return texture2D(osc_note, vec2(ch / 64.)).r;
+}
+
+float knob(in float c) {
+  return texture2D(midi, vec2(176. / 256., (c + 16.) / 128.)).x * 2.;
+}
+
 float beat;
+float v;
 void initGlobals() {
   beat = texture2D(osc_beat, vec2(0)).r;
+  v = volume * knob(7.);
 }
 
 vec2 rot(vec2 st, float t) {
@@ -28,9 +40,6 @@ vec2 rot(vec2 st, float t) {
   return mat2(c, -s, s, c) * st;
 }
 
-float osc(in float ch) {
-  return texture2D(osc_note, vec2(ch / 64.)).r;
-}
 
 vec3 tetra(in float id, in float count) {
   float m = mod(id, 6.); // TBD: change mod
@@ -42,7 +51,7 @@ vec3 tetra(in float id, in float count) {
   vec3 d = vec3(1, 1, -1);
 
   float ti = id / count;
-  float wireness = fract(time * .2);
+  float wireness = knob(6.);
   ti = mix(ti, step(.5, ti), wireness * .9);
 
   if (m == 0.) p = mix(a, b, ti);
@@ -74,7 +83,7 @@ vec3 box(in float id, in float count) {
 
   float ti = id / count;
 
-  float wireness = fract(time * .2);
+  float wireness = knob(6.);
   ti = mix(ti, step(.5, ti), wireness * .9);
 
   if (m == 0.) p = mix(a, b, ti);
@@ -133,28 +142,39 @@ vec3 oRing(vec3 pos, in float id, in float count) {
   ) * 0.5;
 }
 
+vec3 oRis(in vec3 pos, in float id, in float count) {
+  return vec3(
+    sin(id * 3.) * sin(time * .2 + id),
+    cos(id * 3.) * cos(time * .4 + id),
+    cos(time) * sin(time + id)
+  );
+}
+
+vec3 wig(in vec3 pos, in float noisiness) {
+  if (noisiness > 0.1) {
+    pos.x += sin(vertexId * 2. + time * 30.) * sin(vertexId * 6. + time * 40.) * .1 * noisiness;
+    pos.y += sin(vertexId * 3. + time * 23.) * sin(vertexId * 7. + time * 80.) * .1 * noisiness;
+    pos.z += sin(vertexId * 4. + time * 13.) * sin(vertexId * 3. + time * 50.) * .1 * noisiness;
+  }
+  return pos;
+}
+
 void main() {
   initGlobals();
 
   float i = vertexId * 2.;
 
-  vec3 pos = vec3(
-    sin(i * 2.) * sin(time * .2 + i),
-    cos(i * 3.) * cos(time * .4 + i),
-    cos(time) * sin(time + vertexId)
-  );
+  vec3 pos = vec3(0.);
+
+  pos = oRis(pos, vertexId, vertexCount);
 
   if (osc(56.) > .0) pos = oTetra(pos, vertexId, vertexCount);
   if (osc(57.) > .0) pos = oRing(pos, vertexId, vertexCount);
-  if (osc(58.) > .0) pos = oBox(pos, vertexId, vertexCount);
-  if (osc(59.) > .0) pos = oQuad(pos, vertexId, vertexCount);
+  if (osc(58.) > .0) pos = oTetra(pos, vertexId, vertexCount);
+  if (osc(59.) > .0) pos = oBox(pos, vertexId, vertexCount);
+  if (osc(60.) > .0) pos = oQuad(pos, vertexId, vertexCount);
 
-  // pos = oBox(pos, vertexId, vertexCount);
-
-  float noisiness = .0;
-  pos.x += sin(vertexId * 2. + time * 30.) * .1 * noisiness;
-  pos.y += sin(vertexId * 3. + time * 23.) * .1 * noisiness;
-  pos.z += sin(vertexId * 4. + time * 13.) * .1 * noisiness;
+  pos = wig(pos, knob(5.));
 
   gl_Position = vec4(pos.x, pos.y * resolution.x / resolution.y, pos.z, 1);
   gl_PointSize = 2. / max(abs(pos.z), .1);
@@ -164,6 +184,5 @@ void main() {
     sin(pos.y + i * .0002),
     sin(pos.z + i * .0001),
     1
-    // fract(sin(i * 0.7) * sin(i * 2.3))
   );
 }
