@@ -33,7 +33,7 @@ float osc(in float ch) {
 }
 
 vec3 tetra(in float id, in float count) {
-  float m = mod(id, 6.);
+  float m = mod(id, 6.); // TBD: change mod
   vec3 p = vec3(0);
 
   vec3 a = vec3(-1, -1, -1);
@@ -42,6 +42,8 @@ vec3 tetra(in float id, in float count) {
   vec3 d = vec3(1, 1, -1);
 
   float ti = id / count;
+  float wireness = fract(time * .2);
+  ti = mix(ti, step(.5, ti), wireness * .9);
 
   if (m == 0.) p = mix(a, b, ti);
   if (m == 1.) p = mix(a, c, ti);
@@ -57,8 +59,49 @@ vec3 tetra(in float id, in float count) {
   return p;
 }
 
+vec3 box(in float id, in float count) {
+  float m = mod(id, 12.);
+  vec3 p = vec3(0);
+
+  vec3 a = vec3(-1, -1, -1);
+  vec3 b = vec3(-1, -1, 1);
+  vec3 c = vec3(-1, 1, -1);
+  vec3 d = vec3(-1, 1, 1);
+  vec3 e = vec3(1, -1, -1);
+  vec3 f = vec3(1, -1, 1);
+  vec3 g = vec3(1, 1, -1);
+  vec3 h = vec3(1, 1, 1);
+
+  float ti = id / count;
+
+  float wireness = fract(time * .2);
+  ti = mix(ti, step(.5, ti), wireness * .9);
+
+  if (m == 0.) p = mix(a, b, ti);
+  else if (m == 1.) p = mix(c, d, ti);
+  else if (m == 2.) p = mix(e, f, ti);
+  else if (m == 3.) p = mix(g, h, ti);
+  else if (m == 4.) p = mix(a, c, ti);
+  else if (m == 5.) p = mix(b, d, ti);
+  else if (m == 6.) p = mix(e, g, ti);
+  else if (m == 7.) p = mix(f, h, ti);
+  else if (m == 8.) p = mix(a, e, ti);
+  else if (m == 9.) p = mix(b, f, ti);
+  else if (m == 10.) p = mix(c, g, ti);
+  else  p = mix(d, h, ti);
+
+  p.xy = rot(p.xy, time * PI / 7.5); // 15sec
+  p.xz = rot(p.xz, time * PI / 5.); // 10sec
+
+  return p;
+}
+
 vec3 oTetra(vec3 pos, in float id, in float count) {
-  return tetra(mod(vertexId * 11., vertexCount), vertexCount) * .3;// * (1. + volume * sin(vertexId *0.03));
+  return tetra(mod(vertexId * 11., vertexCount), vertexCount) * .3;
+}
+
+vec3 oBox(vec3 pos, in float id, in float count) {
+  return box(mod(vertexId * 17., vertexCount), vertexCount) * .3;
 }
 
 vec3 oQuad(vec3 pos, in float id, in float count) {
@@ -103,8 +146,15 @@ void main() {
 
   if (osc(56.) > .0) pos = oTetra(pos, vertexId, vertexCount);
   if (osc(57.) > .0) pos = oRing(pos, vertexId, vertexCount);
-  if (osc(58.) > .0) pos = oQuad(pos, vertexId, vertexCount);
+  if (osc(58.) > .0) pos = oBox(pos, vertexId, vertexCount);
+  if (osc(59.) > .0) pos = oQuad(pos, vertexId, vertexCount);
 
+  pos = oBox(pos, vertexId, vertexCount);
+
+  float noisiness = .0;
+  pos.x += sin(vertexId * 2. + time * 30.) * .1 * noisiness;
+  pos.y += sin(vertexId * 3. + time * 23.) * .1 * noisiness;
+  pos.z += sin(vertexId * 4. + time * 13.) * .1 * noisiness;
 
   gl_Position = vec4(pos.x, pos.y * resolution.x / resolution.y, pos.z, 1);
   gl_PointSize = 2. / max(abs(pos.z), .1);
