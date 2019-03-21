@@ -24,7 +24,7 @@ vec3 hueRot(vec3 col, float t)
   return hsv2rgb(hsv);
 }
 
-vec3 godray(in float level) {
+vec3 oGodray(in float level) {
   float d = level * .1;
   vec3 b = vec3(0.);
 
@@ -160,8 +160,8 @@ vec4 oChroma(in vec4 c, in vec2 uv, in vec2 p, in float ch) {
   if (ch > 0.)  {
     uv -= .5;
 
-    c.r = texture2D(renderBuffer, uv * 0.97 + .5).r;
-    c.g = texture2D(renderBuffer, uv * 0.985 + .5).g;
+    c.r = texture2D(renderBuffer, uv * 0.96 + .5).r;
+    c.g = texture2D(renderBuffer, uv * 0.98 + .5).g;
     c.b = texture2D(renderBuffer, uv * 1.00 + .5).b;
   }
   return c;

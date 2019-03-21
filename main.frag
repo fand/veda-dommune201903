@@ -68,10 +68,6 @@ void initGlobals() {
   loopLength = texture2D(osc_beat, vec2(1)).r;
 }
 
-float cc(in float c) {
-  return texture2D(midi, vec2(176. / 256., c / 128.)).x * 2.;
-}
-
 float rings(in vec2 uv) {
   uv = uv * 2. - 1.;
   float b = exp(beat * -4.);
@@ -505,6 +501,9 @@ vec4 post(in vec4 c) {
   c = oRgbSwap1(c, uv, p, o24);
   c = oRgbSwap2(c, uv, p, o25);
   c = oRgbSwap3(c, uv, p, o26);
+
+  c.rgb += oGodray(cc(17.) * 0.4);
+  // c += cc(17.);
 
   return c;
 }

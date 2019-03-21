@@ -1,3 +1,7 @@
+float cc(in float c) {
+  return texture2D(midi, vec2(176. / 256., c / 128.)).x * 2.;
+}
+
 float osc(in float ch) {
   return texture2D(osc_note, vec2(ch / 64.)).r;
 }

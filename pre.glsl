@@ -1,7 +1,8 @@
 vec2 iWiggle(in vec2 uv, in float ch) {
   if (ch > 0.) {
-    uv.x += snoise(vec2(time * 10.)) * .01 * ch;
-    uv.y += snoise(vec2(time * 8. + 1.)) * .01 * ch;
+    float w = cc(16.) * .1;
+    uv.x += snoise(vec2(time * 10.)) * w;
+    uv.y += snoise(vec2(time * 8. + 1.)) * w;
   }
   return uv;
 }

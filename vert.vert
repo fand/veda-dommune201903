@@ -82,6 +82,14 @@ vec3 oQuad(vec3 pos, in float id, in float count) {
   return pos;
 }
 
+vec3 oRing(vec3 pos, in float id, in float count) {
+  if (mod(id, 2.) < 0.) { return vec3(0.); }
+
+  return vec3(
+      cos(id +time), sin(id +time), 0.
+  ) * 0.5;
+}
+
 void main() {
   initGlobals();
 
@@ -94,7 +102,9 @@ void main() {
   );
 
   if (osc(56.) > .0) pos = oTetra(pos, vertexId, vertexCount);
-  if (osc(57.) > .0) pos = oQuad(pos, vertexId, vertexCount);
+  if (osc(57.) > .0) pos = oRing(pos, vertexId, vertexCount);
+  if (osc(58.) > .0) pos = oQuad(pos, vertexId, vertexCount);
+
 
   gl_Position = vec4(pos.x, pos.y * resolution.x / resolution.y, pos.z, 1);
   gl_PointSize = 2. / max(abs(pos.z), .1);
