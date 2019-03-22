@@ -56,7 +56,13 @@ float dBalls(in vec2 uv) {
   float c = 0.0;
 
   // TBD: modify p
+  // p = fract(p * length(p));
 
+  // p /= floor(p + sin(a + time));
+
+
+
+p *= .8;
   float r = .5;
 
   // ring
@@ -67,20 +73,44 @@ float dBalls(in vec2 uv) {
   t = (1. - t) * loopLength + time;
 
   // TBD: modify r, p
+  if (fract(time) < .2) {
+    p *= p;
+  }
+
+  r += sin(t);
 
   // balls
   float ct = cos(t), st = sin(t);
   vec2 c1 = vec2(ct, st) * r;
   vec2 c2 = -c1;
 
-  c += .03 / length(p - c1);
-  c += .03 / length(p - c2);
+  c += .1 / length(p - c1);
+  c += .1 / length(p - c2);
+
+
+  c1 = rot(c1, PI *.5);
+  c2 = rot(c2, PI *.5);
+  c += .08 / length(p - c1);
+  c += .05 / length(p - c2);
+
+  p = rot(p, time);
+  p = abs(p);
+
+  p *= .2;
+
+  c1 = rot(c1, PI *.2);
+  c2 = rot(c2, PI *.2);
+  c += .1 / length(p - c1);
+  c += .1 / length(p - c2);
 
   return c;
 }
 
 float dStripes(in vec2 uv) {
   vec2 uv0 = uv;
+
+  float tt = floor(time / loopLength);
+  uv = rot(uv, time * .3);
 
   float b = exp(fract(beat * 2.) * -4.);
 
@@ -133,14 +163,19 @@ vec4 dTri(in vec2 uv) {
     p = rot(p, -PI * 4. / 3.);
   }
 
-  c.b += .07 / abs(p.x - b * 2. + v);
-  c.rg += .03 / abs(p.x - b * 4. + v);
-  p *= .2 + length(p);
-  p = rot(p, .1 + time +length(p) + a);
-  // p *= .8;
-  c.bg += .09 / abs(p.x - b * 8.2 + v);
+  // TBD
 
-  c.r += sin(p.x * 3. - time) * sin(p.x *7.3 - time * 3.3) * 3.;
+  c.b += .07 / abs(p.x - b * 2. + v);
+
+  p *= p;
+  c.rg += .03 / abs(p.x - b * 4. + v);
+  p = rot(p, b);
+  c.bg += (fract(beat * beat) * .3) / abs(p.x - b * 8.2 + v);
+
+  p = rot(p, 3.);
+  c.b += .08 / abs(p.x - b * .2 + v);
+  p = rot(p, 1.);
+  c.r += .1 / abs(p.x - b * 2.2 + v);
 
   return c;
 }
@@ -152,21 +187,39 @@ float dHex(vec2 uv) {
   float b = log(beat *8.);
   float c = 0.;
 
+  p *= 1. + length(p) * 2.;
+  // p = rot(p, sin(length(p) + b * 8.));
+
+  p *= .3;
+
   float div = 4.;
   vec2 hc = hexCenter(p * div) / div;
   vec2 p2 = (p - hc) * div;
   float n = snoise(hc * 3. + time * .03) * 3.;
   c += hexLine(p2 * (1. + sin(n + time)), .1);
 
+  // div = 7.3;
+  // hc = hexCenter(p * div) / div;
+  // p2 = (p - hc) * div;
+  // n = snoise(hc * 3. + time * .003) * 3.;
+  // c += hexLine(p2 * (1. + sin(n + time)), .1);
+
+  p2 = rot(p, n * 7. + time);
+  // p2 *= p;
+  c = step(.8, sin(p2.y * p.y*39. + time * 3.3)) * .7;
+
   return c;
 }
 
 float hexWave(in vec2 p) {
   // TBD: freq change
-  float freq = 2.;
+  float freq = 2. + floor(sin(time) * 7.);
 
   float c = 0.0;
   p = abs(p);
+
+  // p = rot(p, floor(length(p) * 4.));
+
   float a = atan(p.y, p.x);
   if (abs(a) > PI / 6.0) {
     p = rot(p, PI / 3.0);
@@ -182,7 +235,7 @@ float dWaves(in vec2 uv) {
 
   float c = 0.;
 
-  float b = 1. - exp(beat * -8.0);
+  float b = 1. - exp(fract(beat *3.) * -3.0);
   float d = b * 2.;
 
   p *= 2.4;
@@ -200,7 +253,7 @@ float metaball(in vec2 uv) {
 
   uv.x += uv.x * cos(uv.x * PI + time);
 
-  float nb = 2.;
+  float nb = 14.;
 
   c += cos(uv.x * nb * PI) * cos(uv.y * nb * 2. * PI);
 
@@ -217,11 +270,25 @@ float metaballs(in vec2 uv) {
   float b = exp(beat * -4.);
 
   // TBD: abs, rot
+    // p *= p + sin(atan(p.y, p.x) * 8.) * .1;
+    // p *=
+
+    p*= p;
 
   float c = 0.;
 
   // TBD: repeat
   c += metaball(p + sin(time) * .1);
+
+  p = rot(p, 2.);
+  c += metaball(p + sin(time) * .2);
+  p = rot(p, 2.);
+  c += metaball(p + sin(time) * .2);
+
+  p = rot(p, 2.);
+  c += metaball(p + sin(time) * .2);
+  p = rot(p, 2.);
+  c += metaball(p + sin(time) * .2);
 
   return c;
 }
@@ -229,11 +296,14 @@ float metaballs(in vec2 uv) {
 vec4 draw(in vec2 uv) {
   vec4 c = vec4(0);
   if (o48 > .0) c += dBalls(uv) * m0;
+  c += dBalls((uv - .5) * (uv - .3) * 2.) * m0;
   if (o49 > .0) c += dStripes(uv) * m1;
   if (o50 > .0) c += dTunnel(uv) * m2;
   if (o51 > .0) c += dTri(uv) * m3;
-  if (o52 > .0) c += texture2D(vertBuffer, uv) * m4;
-  if (o53 > .0) c += dHex(uv) * m5;
+
+  // if (o52 > .0) c += texture2D(vertBuffer, abs(uv - 5. + sin(time))) * m4;
+  if (o52 > .0) c += texture2D(vertBuffer, fract(uv)) * m4;
+  if (o53 > .0) c.r += dHex(uv) * m5;
   if (o54 > .0) c += metaballs(uv) * m6;
   if (o55 > .0) c += dWaves(uv) * m7;
 
@@ -258,6 +328,4 @@ void main() {
     vec4 c = texture2D(renderBuffer, uv);
     gl_FragColor = post(c);
   }
-
-  // gl_FragColor += o8;
 }
